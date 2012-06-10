@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  #%L
+  XPOM Maven Plugin
+  %%
+  Copyright (C) 2012 David Thomas Hume
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<article xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <info>
+    <title>Usage</title>
+
+    <pubdate>2012-06-07</pubdate>
+
+    <abstract>
+      <para>
+        An overview of how to use the xpom-maven-plugin
+      </para>
+    </abstract>
+  </info>
+  
+  <section>
+    <title>Transforming the current POM</title>
+    <para>
+      The plugin aims to provide first class support for performing
+      transformations on the current POM via the <code>project</code> goal,
+      and optionally the <code>prepare-project</code>,
+      <code>commit-project</code> and <code>rollback-project</code> goals.
+    </para>
+    <section>
+      <title>Controlling the input</title>
+      <para>
+        The input to the transformation can take one of three forms, depending
+        on the configuration of the execution. By default the input is the
+        original POM <emphasis>file</emphasis> itself, but if you'd rather work
+        with the <emphasis>model</emphasis> for the current project, that is
+        to say, the model Maven has constructed by reading the original POM
+        file reserialized back to XML, then you can set the
+        <code>useModel</code> parameter to <code>true</code>, which by
+        default can be accomplished by using <code>-DuseModel</code> on the
+        command line.
+      </para>
+      <para>
+        If, on the other hand, you want to transform the
+        <emphasis>effective</emphasis> model, that is to say, the model
+        constructed by Maven taking into account both inheritance and
+        interpolation reserialized back to XML, then you can set the
+        <code>useEffectiveModel</code> parameter to <code>true</code>,
+        which by default can be accomplished by using
+        <code>-DuseEffectiveModel</code> on the command line.
+      </para>
+    </section>
+    <section>
+      <title>POM Backup</title>
+      <para>
+        Transforming project POMs is, obviously, a risky business. This is the
+        reason for the <code>dryRun</code> parameter, which causes the
+        <code>project</code> goal to simply write its output to the console.
+        
+        As a further step, however, the goal also employs the use of a basic
+        backup / restore strategy for POM files, which is enabled by default.  
+      </para>
+      <para>
+        The entire "local" scm system can be turned off via the
+        <code>disableBackups</code> parameter (which by default can be
+        specified on the command line using <code>-DnoBackups</code>).
+      </para>
+    </section>
+    <section>
+      <title>Project SCM Integration</title>
+      <para>
+        The <code>editPOMInSCM</code> parameter, which by default can be
+        specified on the command line using <code>-DeditPOMInSCM</code>, will
+        cause the plugin to execute the <code>edit</code> goal of the
+        scm-maven-plugin on the currently executing
+        <filename class="devicefile">pom.xml</filename>. This is useful when
+        integrating to SCMs such as <link
+        xlink:href="http://www.perforce.com/">Perforce</link> which make files
+        read only when they are not being edited.
+      </para>
+    </section>
+  </section>
+</article>

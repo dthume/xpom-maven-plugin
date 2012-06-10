@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <inline-props>
+    <properties version="1.0">
+      <entry key="foo">bar</entry>
+      <entry key="me">you</entry>
+    </properties>
+  </inline-props>
+  <props-from-unparsed-text>
+    <properties version="1.0">
+      <entry key="prop1">value1</entry>
+      <entry key="prop2">value2</entry>
+    </properties>
+  </props-from-unparsed-text>
+  <reserialized-props>
+foo=bar
+me=you
+  </reserialized-props>
+</result>
