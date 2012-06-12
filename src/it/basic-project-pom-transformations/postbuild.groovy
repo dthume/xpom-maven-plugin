@@ -5,7 +5,7 @@ XMLUnit.setIgnoreWhitespace(true);
 
 def modules = new XmlSlurper()
     .parseText(new File(basedir, "pom.xml").text)
-    .modules.module.collect { // 
+    .modules.module.collect {
         new File(basedir, it.text());
     };
 
