@@ -27,6 +27,8 @@
   exclude-result-prefixes="#all"
   version="2.0">
 
+  <!--======================= Resolve Placeholders =======================-->
+
   <xsl:template mode="xpom:resolve-placeholders" match="text()">
     <xsl:sequence select="xpom:evaluate(.)" />
   </xsl:template>
@@ -47,4 +49,45 @@
     <xsl:param name="fragment" />
     <xsl:apply-templates mode="xpom:resolve-placeholders" select="$fragment" />
   </xsl:function>
+  
+  <!--====================== Coordinate Conversion ======================-->
+  
+  <xsl:template mode="xpom:to-coordinate-string" match="/ | @* | node()">
+    <xsl:apply-templates mode="#current" select="@* | node()" />
+  </xsl:template>
+  
+  <xsl:template mode="xpom:to-coordinate-string" match="pom:parent">
+    
+  </xsl:template>
+
+  <xsl:template mode="xpom:to-coordinate-string" match="pom:extension">
+    
+  </xsl:template>
+  
+  <xsl:template mode="xpom:to-coordinate-string" match="pom:plugin">
+    
+  </xsl:template>
+  
+  <xsl:template mode="xpom:to-coordinate-string" match="pom:dependency">
+    
+  </xsl:template>
+  
+  <!--======================= Artifact Resolution =======================-->
+
+  <xsl:template name="xpom:resolve-pom" as="document-node()?">
+    <xsl:param name="pom" />
+  </xsl:template>
+  
+  <xsl:template name="xpom:resolve-parent-pom" as="document-node()?">
+    <xsl:param name="pom" />
+  </xsl:template>
+  
+  <xsl:template name="xpom:resolve-dependency-pom" as="document-node()?">
+    <xsl:param name="pom" />
+  </xsl:template>
+  
+  <xsl:template name="xpom:resolve-plugin-pom" as="document-node()?">
+    <xsl:param name="pom" />
+  </xsl:template>
+  
 </xsl:stylesheet>

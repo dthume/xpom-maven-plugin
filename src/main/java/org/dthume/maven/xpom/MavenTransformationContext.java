@@ -135,33 +135,35 @@ public final class MavenTransformationContext implements TransformationContext {
         this.transformationAttributes = attrs;
     }
     
+    public void setRepositorySystem(RepositorySystem repoSystem) {
+        this.repoSystem = repoSystem;
+    }
+
+    public void setRepositorySession(RepositorySystemSession repoSession) {
+        this.repoSession = repoSession;
+    }
+
+    public void setProjectRepositories(List<RemoteRepository> projectRepos) {
+        this.projectRepos = projectRepos;
+    }
+
+    public void setPluginRepositories(List<RemoteRepository> pluginRepos) {
+        this.pluginRepos = pluginRepos;
+    }
+
     public Source resolveArtifactPOM(final String gav) {
         final ArtifactResult result = resolveArtifact(gav);
         return new StreamSource(result.getArtifact().getFile());
     }
     
-    public Source resolveArtifactFile(final String gav, final String file) {
-        final ArtifactResult result = resolveArtifact(gav);
-        throw new UnsupportedOperationException("TODO - implement");
-    }
-    
-    @SuppressWarnings("unchecked")
     private ArtifactResult resolveArtifact(final String artifactId) {
-        final ArtifactRequest req = new ArtifactRequest();
-        
-        final List<List<RemoteRepository>> repoSets =
-                asList(projectRepos, pluginRepos);
-        for (final List<RemoteRepository> repos : repoSets)
-            for (final RemoteRepository repo : repos)
-                req.addRepository(repo);
-
         final Artifact artifact = new DefaultArtifact(artifactId);
-        req.setArtifact(artifact);
-        
+        final ArtifactRequest req =
+                new ArtifactRequest(artifact, projectRepos, null);            
         try {
             return repoSystem.resolveArtifact(repoSession, req);
         } catch (final ArtifactResolutionException e) {
-            throw new RuntimeException("TODO: fixme"); // FIXME
+            throw new RuntimeException("TODO: fixme", e); // FIXME
         }
     }
 }

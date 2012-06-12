@@ -20,6 +20,7 @@
   <packaging>maven-plugin</packaging>
 
   <name>XPOM Maven Plugin</name>
+ 
   <inceptionYear>2012</inceptionYear>
   <url>http://dthume.github.com/${project.artifactId}/</url>
 

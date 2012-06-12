@@ -188,6 +188,11 @@ public class ProjectMojo extends AbstractXPOMMojo {
         context.setTransformationAttributes(getTransformationAttributeMap());
         context.setTransformationParameters(getTransformationParameterMap());
         
+        context.setRepositorySystem(repoSystem);
+        context.setRepositorySession(repoSession);
+        context.setPluginRepositories(pluginRepos);
+        context.setProjectRepositories(projectRepos);
+        
         return context;
     }
     

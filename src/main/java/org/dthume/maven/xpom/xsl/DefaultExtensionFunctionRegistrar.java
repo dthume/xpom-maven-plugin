@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
@@ -61,6 +62,7 @@ public class DefaultExtensionFunctionRegistrar
         functions.add(new FilePathToURI());
         functions.add(new ReadPropertiesString(configuration));
         functions.add(new RelativizeURI());
+        functions.add(new ResolveArtifactPOM(configuration, context));
         
         final ExpressionEvaluator expressionEvaluator =
                 context.getExpressionEvaluator();
@@ -239,6 +241,44 @@ public class DefaultExtensionFunctionRegistrar
                             new ByteArrayInputStream(out.toByteArray());
                     
                     return trax.toNode(new StreamSource(in));
+                }
+            };
+        }
+    }
+    
+    private class ResolveArtifactPOM extends SimpleFunctionDef {
+        private final Configuration configuration;
+        
+        private final TransformationContext context;
+        
+        ResolveArtifactPOM(Configuration configuration,
+                TransformationContext context) {
+            super(PREFIX, XPOMConstants.CORE_NS,
+                    "resolve-artifact-pom",
+                    OPTIONAL_DOCUMENT_NODE, SINGLE_STRING);
+            this.configuration = configuration;
+            this.context = context;
+        }
+        
+        public ExtensionFunctionCall makeCallExpression() {
+            return new ExtensionFunctionCall() {
+                @Override
+                public SequenceIterator<? extends Item> call(
+                        final SequenceIterator<? extends Item>[] args,
+                        final XPathContext xpathContext) throws XPathException {
+                    final String coords = args[0].next().getStringValue();
+                    
+                    Node node;
+                    try {
+                        node = trax.toNode(context.resolveArtifactPOM(coords));
+                    } catch (final TransformerException e) {
+                        throw new XPathException(e);
+                    }
+                    
+                    final NodeInfo item =
+                            new DocumentWrapper(node, null, configuration);
+                    
+                    return SingletonIterator.makeIterator(item);
                 }
             };
         }
