@@ -1,13 +1,17 @@
 package org.dthume.maven.xpom.xsl;
 
+import static net.sf.saxon.expr.StaticProperty.EXACTLY_ONE;
+import static net.sf.saxon.type.BuiltInAtomicType.ANY_URI;
 import static net.sf.saxon.value.SequenceType.OPTIONAL_DOCUMENT_NODE;
 import static net.sf.saxon.value.SequenceType.SINGLE_STRING;
+import static net.sf.saxon.value.SequenceType.makeSequenceType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +31,7 @@ import net.sf.saxon.om.SequenceIterator;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.SingletonIterator;
+import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.StringValue;
 
@@ -37,9 +42,13 @@ import org.dthume.maven.xpom.TransformationContext;
 import org.dthume.maven.xpom.XPOMConstants;
 import org.w3c.dom.Node;
 
+@SuppressWarnings({"serial", "rawtypes"})
 @Component(role=ExtensionFunctionRegistrar.class)
 public class DefaultExtensionFunctionRegistrar
     implements ExtensionFunctionRegistrar {
+    
+    private final static SequenceType SINGLE_URI =
+            makeSequenceType(ANY_URI, EXACTLY_ONE);
 
     @Requirement
     private TraxHelper trax;
@@ -64,8 +73,6 @@ public class DefaultExtensionFunctionRegistrar
     
     private final static String PREFIX = "xpom";
     
-    private final static String URI = XPOMConstants.CORE_NS;
-    
     private abstract class SimpleFunctionDef
         extends ExtensionFunctionDefinition {
 
@@ -76,9 +83,7 @@ public class DefaultExtensionFunctionRegistrar
         private final SequenceType resultType;
         
         protected SimpleFunctionDef(
-                final String prefix,
-                final String uri,
-                final String name,
+                final String prefix, final String uri, final String name,
                 final SequenceType resultType,
                 final SequenceType...argumentTypes) {
             this.prefix = prefix;
@@ -139,7 +144,7 @@ public class DefaultExtensionFunctionRegistrar
     private class FilePathToURI extends SimpleFunctionDef {
         FilePathToURI() {
             super(PREFIX, XPOMConstants.CORE_NS, "filepath-to-uri",
-                    SINGLE_STRING, SINGLE_STRING);
+                    SINGLE_URI, SINGLE_STRING);
         }
         
         public ExtensionFunctionCall makeCallExpression() {
@@ -149,10 +154,10 @@ public class DefaultExtensionFunctionRegistrar
                         final SequenceIterator<? extends Item>[] args,
                         final XPathContext context) throws XPathException {
                     final String path = args[0].next().getStringValue().trim();
-                    final String value = new File(path).toURI().toString();
-                    final StringValue stringValue = new StringValue(value);
+                    final String uri = new File(path).toURI().toString();
+                    final AnyURIValue value = new AnyURIValue(uri);
 
-                    return SingletonIterator.makeIterator(stringValue);
+                    return SingletonIterator.makeIterator(value);
                 }                
             };
         }
@@ -161,7 +166,7 @@ public class DefaultExtensionFunctionRegistrar
     private class RelativizeURI extends SimpleFunctionDef {
         RelativizeURI() {
             super(PREFIX, XPOMConstants.CORE_NS, "relativize-uri",
-                    SINGLE_STRING, SINGLE_STRING, SINGLE_STRING);
+                    SINGLE_URI, SINGLE_STRING, SINGLE_STRING);
         }
         
         public ExtensionFunctionCall makeCallExpression() {
@@ -170,20 +175,20 @@ public class DefaultExtensionFunctionRegistrar
                 public SequenceIterator<? extends Item> call(
                         final SequenceIterator<? extends Item>[] args,
                         final XPathContext context) throws XPathException {
-                    final java.net.URI uri = parseURI(args[0]);
-                    final java.net.URI base = parseURI(args[1]);
-                    final String value = base.relativize(uri).toString();
-                    final StringValue stringValue = new StringValue(value);
+                    final URI uri = parseURI(args[0]);
+                    final URI base = parseURI(args[1]);
+                    final AnyURIValue value =
+                            new AnyURIValue(base.relativize(uri).toString());
 
-                    return SingletonIterator.makeIterator(stringValue);
+                    return SingletonIterator.makeIterator(value);
                 }
                 
-                private java.net.URI parseURI(
+                private URI parseURI(
                         final SequenceIterator<? extends Item> seq)
                         throws XPathException {
                     try {
                         final String uri = seq.next().getStringValue().trim();
-                        return new java.net.URI(uri);
+                        return new URI(uri);
                     } catch (URISyntaxException e) {
                         throw new XPathException(e);
                     }
@@ -213,7 +218,6 @@ public class DefaultExtensionFunctionRegistrar
                         final Node node = propertiesStringToSource(input);
                         final NodeInfo doc =
                                 new DocumentWrapper(node, null, configuration);
-                        
                         return SingletonIterator.makeIterator(doc);
                     } catch (final IOException e) {
                         throw new XPathException(e);

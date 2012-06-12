@@ -19,6 +19,7 @@
  */
 package org.dthume.maven.xpom;
 
+import static net.sf.saxon.lib.FeatureKeys.OUTPUT_URI_RESOLVER;
 import static org.dthume.maven.xpom.XPOMConstants.xpomName;
 
 import java.io.File;
@@ -33,6 +34,7 @@ import javax.xml.transform.URIResolver;
 
 import net.sf.saxon.Configuration;
 import net.sf.saxon.TransformerFactoryImpl;
+import net.sf.saxon.lib.StandardOutputResolver;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -93,10 +95,10 @@ public class XSLTransformer implements POMTransformer {
             final TransformerFactoryImpl factory = new TransformerFactoryImpl();
             final Configuration config = factory.getConfiguration();
 
+            setFactoryAttributes(factory);
             setURIResolver(factory);
-            
-            for (final ExtensionFunctionRegistrar r : extensionFunctions)
-                r.registerExtensionFunctions(context, config);
+            setOutputURIResolver(factory);
+            bindExtensionFunctions(config);
 
             return factory;
         }
@@ -106,6 +108,23 @@ public class XSLTransformer implements POMTransformer {
                     (URIResolver)new StandardLibraryURIResolver()
             );
             factory.setURIResolver(new ChainingURIResolver(resolvers));
+        }
+
+        private void setOutputURIResolver(final TransformerFactory factory) {
+            factory.setAttribute(OUTPUT_URI_RESOLVER,
+                    new StandardOutputResolver());
+        }
+        
+        private void bindExtensionFunctions(final Configuration config) {
+            for (final ExtensionFunctionRegistrar r : extensionFunctions)
+                r.registerExtensionFunctions(context, config);
+        }
+        
+        private void setFactoryAttributes(final TransformerFactory factory) {
+            final Map<String, Object> attrs =
+                    context.getTransformationAttributes();
+            for (final Map.Entry<String, Object> attr : attrs.entrySet())
+                factory.setAttribute(attr.getKey(), attr.getValue());
         }
     }
 }

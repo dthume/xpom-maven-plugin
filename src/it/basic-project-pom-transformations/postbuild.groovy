@@ -46,7 +46,6 @@ def assertXMLFilesEqual = { msg, expected, actual ->
 };
 
 def assertSimpleTestCasePass = { testcase ->
-    println "Validating testcase: $testcase";
     def testCaseDir = new File(TEST_CASE_RESULTS, testcase);
     def expected = new File(testCaseDir, "expected/pom.xml");
     def actual = new File(testCaseDir, "actual/pom.xml");

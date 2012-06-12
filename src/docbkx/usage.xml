@@ -40,8 +40,8 @@
     <para>
       The plugin aims to provide first class support for performing
       transformations on the current POM via the <code>project</code> goal,
-      and optionally the <code>prepare-project</code>,
-      <code>commit-project</code> and <code>rollback-project</code> goals.
+      and optionally the <code>commit</code> and
+      <code>rollback</code> goals.
     </para>
     <section>
       <title>Controlling the input</title>
@@ -77,7 +77,7 @@
         backup / restore strategy for POM files, which is enabled by default.  
       </para>
       <para>
-        The entire "local" scm system can be turned off via the
+        The entire backup policy can be disabled via the
         <code>disableBackups</code> parameter (which by default can be
         specified on the command line using <code>-DnoBackups</code>).
       </para>

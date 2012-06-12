@@ -25,7 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 /**
  * Rollback project POM transformation.
  * 
- * @goal rollback-project
+ * @goal rollback
  * 
  * @author dth
  */

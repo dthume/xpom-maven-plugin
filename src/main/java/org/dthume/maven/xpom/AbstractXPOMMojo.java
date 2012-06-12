@@ -116,7 +116,7 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     
     protected final boolean isLocalSCM() { return !disableBackups; }
     
-    protected final ExpressionEvaluator createExpressionEvaluator() {
+    protected final ExpressionEvaluator getExpressionEvaluator() {
         final MojoExecution execution = new MojoExecution(new MojoDescriptor());
         final PluginParameterExpressionEvaluator evaluator =
                 new PluginParameterExpressionEvaluator(session, execution);

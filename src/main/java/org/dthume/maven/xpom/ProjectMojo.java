@@ -97,6 +97,17 @@ public class ProjectMojo extends AbstractXPOMMojo {
      * @parameter expression="${xpom.params}"
      */
     private List<String> stringParams = java.util.Collections.emptyList();
+
+    /**
+     * @parameter
+     */
+    private Properties transformationAttributes = new Properties();
+    
+    /**
+     * @readonly
+     * @parameter expression="${xpom.attributes}"
+     */
+    private List<String> stringAttributes = java.util.Collections.emptyList();
     
     /**
      * The entry point to Aether
@@ -137,13 +148,31 @@ public class ProjectMojo extends AbstractXPOMMojo {
     private POMTransformer transformer;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
-        if (!dryRun && null == outputFile)
+        if (!dryRun && isOverwriteProjectPOM())
             prepareProjectPOMForTransformation();
         else getLog().debug("Skipping backup of project POM file");
         
         final TransformationContext context = createTransformationContext();
         
         transformer.transform(context);
+    }
+    
+    private boolean isOverwriteProjectPOM() throws MojoExecutionException {
+        if (null == outputFile) return true;
+        
+        final File projectPOM =
+                getCanonicalFile(getProjectPOMFile());
+        final File outputPOM = getCanonicalFile(outputFile);
+        
+        return projectPOM.equals(outputPOM);
+    }
+    
+    private File getCanonicalFile(final File f) throws MojoExecutionException {
+        try {
+            return f.getCanonicalFile();
+        } catch (final IOException e) {
+            throw new MojoExecutionException("Caught IOException", e);
+        }
     }
     
     private TransformationContext createTransformationContext()
@@ -155,42 +184,54 @@ public class ProjectMojo extends AbstractXPOMMojo {
         context.setModelSource(getModelSource());
         context.setModelResult(getModelResult());
         context.setStylesheetSource(getStylesheetSource());
-        context.setExpressionEvaluator(createExpressionEvaluator());
+        context.setExpressionEvaluator(getExpressionEvaluator());
+        context.setTransformationAttributes(getTransformationAttributeMap());
         context.setTransformationParameters(getTransformationParameterMap());
         
         return context;
     }
     
     private Map<String, Object> getTransformationParameterMap() {
+        return propertiesToMap("parameter", transformationParameters,
+                stringParams);
+    }
+    
+    private Map<String, Object> getTransformationAttributeMap() {
+        return propertiesToMap("attribute", transformationAttributes,
+                stringAttributes);
+    }
+    
+    private Map<String, Object> propertiesToMap(final String type,
+            final Properties props,
+            final List<String> strings) {
         final Map<String, Object> params = new HashMap<String, Object>();
         
-        for (Object key : transformationParameters.keySet())
-            params.put(key.toString(), transformationParameters.get(key));
+        for (final Object key : props.keySet())
+            params.put(key.toString(), props.get(key));
         
-        for (final String kvp : stringParams)
-            addStringParameter(params, kvp);
+        for (final String kvp : strings)
+            addStringParameter(type, params, kvp);
         
         return params;
     }
     
     private final static String PARAM_DELIM = "="; 
     
-    private void addStringParameter(final Map<String, Object> params,
+    private void addStringParameter(final String type,
+            final Map<String, Object> params,
             final String kvp) {
-        if (kvp.contains(PARAM_DELIM)) {
-            final int lastEq = kvp.lastIndexOf(PARAM_DELIM);
+        final int lastEq = kvp.lastIndexOf(PARAM_DELIM);
             
-            if (-1 == lastEq)
-                throw new IllegalArgumentException("Invalid parameter: " + kvp);
-            
-            final String key = kvp.substring(0, lastEq);
-            final String value =
-                    kvp.endsWith(PARAM_DELIM) ? "" : kvp.substring(lastEq + 1);
-            
-            params.put(key, value);
-        } else {
-            throw new IllegalArgumentException("Invalid parameter: " + kvp);
+        if (-1 == lastEq) {
+            final String message = String.format("Invalid %s: %s", type, kvp);
+            throw new IllegalArgumentException(message);
         }
+            
+        final String key = kvp.substring(0, lastEq);
+        final String value =
+                kvp.endsWith(PARAM_DELIM) ? "" : kvp.substring(lastEq + 1);
+
+        params.put(key, value);
     }
 
     private Source getModelSource() {

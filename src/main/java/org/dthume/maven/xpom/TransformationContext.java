@@ -36,4 +36,6 @@ public interface TransformationContext {
     ExpressionEvaluator getExpressionEvaluator();
     
     Map<String, Object> getTransformationParameters();
+    
+    Map<String, Object> getTransformationAttributes();
 }

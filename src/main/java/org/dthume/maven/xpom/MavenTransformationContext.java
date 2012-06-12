@@ -85,6 +85,8 @@ public final class MavenTransformationContext implements TransformationContext {
     
     private Map<String, Object> transformationParameters;
     
+    private Map<String, Object> transformationAttributes;
+    
     public String getSourceFileEncoding() { return sourceEncoding; }
     
     public void setSourceFileEncoding(final String encoding) {
@@ -121,11 +123,18 @@ public final class MavenTransformationContext implements TransformationContext {
         return transformationParameters;
     }
 
-    public void setTransformationParameters(
-            Map<String, Object> transformationParameters) {
-        this.transformationParameters = transformationParameters;
+    public void setTransformationParameters(final Map<String, Object> params) {
+        this.transformationParameters = params;
     }
 
+    public Map<String, Object> getTransformationAttributes() {
+        return transformationAttributes;
+    }
+
+    public void setTransformationAttributes(final Map<String, Object> attrs) {
+        this.transformationAttributes = attrs;
+    }
+    
     public Source resolveArtifactPOM(final String gav) {
         final ArtifactResult result = resolveArtifact(gav);
         return new StreamSource(result.getArtifact().getFile());
@@ -139,9 +148,11 @@ public final class MavenTransformationContext implements TransformationContext {
     @SuppressWarnings("unchecked")
     private ArtifactResult resolveArtifact(final String artifactId) {
         final ArtifactRequest req = new ArtifactRequest();
-
-        for (List<RemoteRepository> repos : asList(projectRepos, pluginRepos))
-            for (RemoteRepository repo : repos)
+        
+        final List<List<RemoteRepository>> repoSets =
+                asList(projectRepos, pluginRepos);
+        for (final List<RemoteRepository> repos : repoSets)
+            for (final RemoteRepository repo : repos)
                 req.addRepository(repo);
 
         final Artifact artifact = new DefaultArtifact(artifactId);
