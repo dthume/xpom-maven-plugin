@@ -1,20 +1,21 @@
-import org.custommonkey.xmlunit.XMLAssert;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+
 import org.custommonkey.xmlunit.XMLUnit;
 
 XMLUnit.setIgnoreWhitespace(true);
 
 def modules = new XmlSlurper()
-    .parseText(new File(basedir, "pom.xml").text)
-    .modules.module.collect {
+    .parseText(
+        new File(basedir, "pom.xml").text
+    ).modules.module.collect {
         new File(basedir, it.text());
     };
 
-modules.each { testcase ->
-    final File testCaseDir = new File(testcase, "target/xpom-test-results");
-    final File expected = new File(testCaseDir, "expected/pom.xml");
-    final File actual = new File(testCaseDir, "actual/pom.xml");
-    XMLAssert.assertXMLEqual("Failed to validate: $testcase",
-        expected.text, actual.text);
+modules.each { test ->
+    final File testDir = new File(test, "target/xpom-test-results");
+    final File expected = new File(testDir, "expected/pom.xml");
+    final File actual = new File(testDir, "actual/pom.xml");
+    assertXMLEqual("Failed to validate: $test", expected.text, actual.text);
 };
 
 return true;
