@@ -55,20 +55,22 @@ public class ProjectMojo extends AbstractXPOMMojo {
     /**
      * Whether or not to use the original, or effective (after inheritance
      * and interpolation) project model as the input to the transformation.
-     * Ignored if {@link #usePOMFile} is {@code true}.
-     * 
+     *
      * @parameter expression="${useEffectiveModel}" default-value="false"
      */
     private boolean useEffectiveModel = false;
 
     /**
      * Whether to use the model instead of the original POM file itself.
-     * 
+     * Ignored if {@link #useEffectiveModel} is {@code true}.
+     *
      * @parameter expression="${useModel}" default-value="false"
      */
     private boolean useModel = false;
     
     /**
+     * The XSL stylesheet to apply.
+     *
      * @required
      * @parameter expression="${xsl}"
      */
@@ -77,33 +79,46 @@ public class ProjectMojo extends AbstractXPOMMojo {
     /**
      * If {@code true} then only output transformation result to console, do
      * not actually write file.
-     * 
+     *
      * @parameter expression="${dryRun}" default-value="false"
      */
     private boolean dryRun = false;
     
     /**
+     * The output file to write to instead of the project {@code pom.xml}.
+     * Setting this will disable the backup stategy automatically.
+     *
      * @parameter expression="${outputFile}"
      */
     private File outputFile = null;
     
     /**
+     * Parameters to pass to the execution of the XSL stylesheet. 
+     *
      * @parameter
      */
     private Properties transformationParameters = new Properties();
 
     /**
+     * (CLI) Comma separated list of parameters to pass to the execution of
+     * the XSL stylesheet.
+     *
      * @readonly
      * @parameter expression="${xpom.params}"
      */
     private List<String> stringParams = java.util.Collections.emptyList();
 
     /**
+     * Attributes to set on the XSL Transformer.
+     *
      * @parameter
      */
     private Properties transformationAttributes = new Properties();
     
     /**
+     * (CLI) Comma separated list of attributes to set on the execution of the
+     * XSL stylesheet.
+     *
      * @readonly
      * @parameter expression="${xpom.attributes}"
      */
@@ -111,32 +126,31 @@ public class ProjectMojo extends AbstractXPOMMojo {
     
     /**
      * The entry point to Aether
-     * 
+     *
      * @component
      */
     private RepositorySystem repoSystem;
     
     /**
      * The current repository/network configuration of Maven.
-     * 
+     *
      * @parameter default-value="${repositorySystemSession}"
      * @readonly
      */
     private RepositorySystemSession repoSession;
     
     /**
-     * The project's remote repositories to use for the resolution of project
-     * dependencies.
-     * 
+     * Remote repositories to use for the resolution of project dependencies.
+     *
      * @parameter default-value="${project.remoteProjectRepositories}"
      * @readonly
      */
     private List<RemoteRepository> projectRepos;
     
     /**
-     * The project's remote repositories to use for the resolution of
-     * plugins and their dependencies.
-     * 
+     * Remote repositories to use for the resolution of plugins and their
+     * dependencies.
+     *
      * @parameter default-value="${project.remotePluginRepositories}"
      * @readonly
      */
@@ -179,7 +193,8 @@ public class ProjectMojo extends AbstractXPOMMojo {
         throws MojoExecutionException, MojoFailureException {
         final MavenTransformationContext context =
                 new MavenTransformationContext();
-        
+
+        context.setArtifactResolver(getArtifactResolver());
         context.setSourceFileEncoding(getSourceFileEncoding());
         context.setModelSource(getModelSource());
         context.setModelResult(getModelResult());
@@ -187,13 +202,13 @@ public class ProjectMojo extends AbstractXPOMMojo {
         context.setExpressionEvaluator(getExpressionEvaluator());
         context.setTransformationAttributes(getTransformationAttributeMap());
         context.setTransformationParameters(getTransformationParameterMap());
-        
-        context.setRepositorySystem(repoSystem);
-        context.setRepositorySession(repoSession);
-        context.setPluginRepositories(pluginRepos);
-        context.setProjectRepositories(projectRepos);
-        
+
         return context;
+    }
+    
+    private ArtifactResolver getArtifactResolver() {
+        return new DefaultArtifactResolver(repoSystem, repoSession,
+                projectRepos, pluginRepos);
     }
     
     private Map<String, Object> getTransformationParameterMap() {

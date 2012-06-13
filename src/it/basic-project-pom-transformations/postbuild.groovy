@@ -4,14 +4,11 @@ import org.custommonkey.xmlunit.XMLUnit;
 
 XMLUnit.setIgnoreWhitespace(true);
 
-def modules = new XmlSlurper()
-    .parseText(
-        new File(basedir, "pom.xml").text
-    ).modules.module.collect {
-        new File(basedir, it.text());
-    };
-
-modules.each { test ->
+new XmlSlurper().parseText(
+    new File(basedir, "pom.xml").text
+).modules.module.collect { moduleName ->
+    new File(basedir, moduleName.text());
+}.each { test ->
     final File testDir = new File(test, "target/xpom-test-results");
     final File expected = new File(testDir, "expected/pom.xml");
     final File actual = new File(testDir, "actual/pom.xml");

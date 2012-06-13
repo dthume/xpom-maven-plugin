@@ -39,5 +39,5 @@ public interface TransformationContext {
     
     Map<String, Object> getTransformationAttributes();
 
-    Source resolveArtifactPOM(String gav);
+    ArtifactResolver getArtifactResolver();
 }

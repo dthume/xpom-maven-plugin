@@ -87,42 +87,5 @@
         </executions>
       </plugin>
     </plugins>
-  </build>
-  
-  <profiles>
-    <profile>
-      <id>expect-pom-as-test-output</id>
-      <activation>
-        <property>
-          <name>useProjectPOMAsExpected</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-expected-test-results</id>
-                <configuration>
-                  <outputDirectory>
-                    ${xpom.testcase.results.dir}/expected
-                  </outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${project.basedir}</directory>
-                      <includes>
-                        <include>pom.xml</include>
-                      </includes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  </build>  
 </project>

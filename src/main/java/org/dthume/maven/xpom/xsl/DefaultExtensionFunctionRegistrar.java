@@ -17,7 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
@@ -38,6 +37,7 @@ import net.sf.saxon.value.StringValue;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.dthume.maven.xpom.ArtifactResolver;
 import org.dthume.maven.xpom.ExpressionEvaluator;
 import org.dthume.maven.xpom.TransformationContext;
 import org.dthume.maven.xpom.XPOMConstants;
@@ -55,22 +55,24 @@ public class DefaultExtensionFunctionRegistrar
     private TraxHelper trax;
     
     public void registerExtensionFunctions(final TransformationContext context,
-            final Configuration configuration) {
+            final Configuration config) {
         final List<ExtensionFunctionDefinition> functions =
                 new LinkedList<ExtensionFunctionDefinition>();
         
         functions.add(new FilePathToURI());
-        functions.add(new ReadPropertiesString(configuration));
+        functions.add(new ReadPropertiesString(config));
         functions.add(new RelativizeURI());
-        functions.add(new ResolveArtifactPOM(configuration, context));
         
-        final ExpressionEvaluator expressionEvaluator =
-                context.getExpressionEvaluator();
-        if (null != expressionEvaluator)
-            functions.add(new EvaluateExpression(expressionEvaluator));
+        final ExpressionEvaluator evaluator = context.getExpressionEvaluator();
+        if (null != evaluator)
+            functions.add(new EvaluateExpression(evaluator));
+        
+        final ArtifactResolver resolver = context.getArtifactResolver();
+        if (null != resolver)
+            functions.add(new ResolveArtifactPOM(resolver, config));
         
         for (final ExtensionFunctionDefinition function : functions)
-            configuration.registerExtensionFunction(function);
+            config.registerExtensionFunction(function);
     }
     
     private final static String PREFIX = "xpom";
@@ -247,17 +249,16 @@ public class DefaultExtensionFunctionRegistrar
     }
     
     private class ResolveArtifactPOM extends SimpleFunctionDef {
+        private final ArtifactResolver resolver;
         private final Configuration configuration;
         
-        private final TransformationContext context;
-        
-        ResolveArtifactPOM(Configuration configuration,
-                TransformationContext context) {
+        ResolveArtifactPOM(final ArtifactResolver resolver,
+                final Configuration configuration) {
             super(PREFIX, XPOMConstants.CORE_NS,
                     "resolve-artifact-pom",
                     OPTIONAL_DOCUMENT_NODE, SINGLE_STRING);
             this.configuration = configuration;
-            this.context = context;
+            this.resolver = resolver;
         }
         
         public ExtensionFunctionCall makeCallExpression() {
@@ -270,7 +271,7 @@ public class DefaultExtensionFunctionRegistrar
                     
                     Node node;
                     try {
-                        node = trax.toNode(context.resolveArtifactPOM(coords));
+                        node = trax.toNode(resolver.resolveArtifactPOM(coords));
                     } catch (final TransformerException e) {
                         throw new XPathException(e);
                     }

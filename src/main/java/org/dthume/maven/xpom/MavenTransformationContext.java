@@ -19,31 +19,11 @@
  */
 package org.dthume.maven.xpom;
 
-import static java.util.Arrays.asList;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.apache.maven.project.MavenProject;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.springframework.xml.transform.StringSource;
 
 public final class MavenTransformationContext implements TransformationContext {
 
@@ -52,43 +32,23 @@ public final class MavenTransformationContext implements TransformationContext {
      * to platform encoding.
      */
     private String sourceEncoding = Charset.defaultCharset().name();
-    
-    /**
-     * The entry point to Aether
-     */
-    private RepositorySystem repoSystem;
-    
-    /**
-     * The current repository/network configuration of Maven.
-     */
-    private RepositorySystemSession repoSession;
-    
-    /**
-     * The project's remote repositories to use for the resolution of project
-     * dependencies.
-     */
-    private List<RemoteRepository> projectRepos;
-    
-    /**
-     * The project's remote repositories to use for the resolution of
-     * plugins and their dependencies.
-     */
-    private List<RemoteRepository> pluginRepos;
-    
+
     private Source stylesheetSource;
-    
+
     private Source modelSource;
-    
+
     private Result modelResult;
-    
+
     private ExpressionEvaluator expressionEvaluator;
-    
+
     private Map<String, Object> transformationParameters;
-    
+
     private Map<String, Object> transformationAttributes;
-    
+
+    private ArtifactResolver artifactResolver;
+
     public String getSourceFileEncoding() { return sourceEncoding; }
-    
+
     public void setSourceFileEncoding(final String encoding) {
         sourceEncoding = encoding;
     }
@@ -98,13 +58,13 @@ public final class MavenTransformationContext implements TransformationContext {
     public void setModelSource(final Source source) {
         modelSource = source;
     }
-    
+
     public Result getModelResult() { return modelResult; }
 
     public void setModelResult(final Result result) {
         modelResult = result;
     }
-    
+
     public Source getStylesheetSource() { return stylesheetSource; }
 
     public void setStylesheetSource(final Source source) {
@@ -134,36 +94,12 @@ public final class MavenTransformationContext implements TransformationContext {
     public void setTransformationAttributes(final Map<String, Object> attrs) {
         this.transformationAttributes = attrs;
     }
-    
-    public void setRepositorySystem(RepositorySystem repoSystem) {
-        this.repoSystem = repoSystem;
+
+    public ArtifactResolver getArtifactResolver() {
+        return artifactResolver;
     }
 
-    public void setRepositorySession(RepositorySystemSession repoSession) {
-        this.repoSession = repoSession;
-    }
-
-    public void setProjectRepositories(List<RemoteRepository> projectRepos) {
-        this.projectRepos = projectRepos;
-    }
-
-    public void setPluginRepositories(List<RemoteRepository> pluginRepos) {
-        this.pluginRepos = pluginRepos;
-    }
-
-    public Source resolveArtifactPOM(final String gav) {
-        final ArtifactResult result = resolveArtifact(gav);
-        return new StreamSource(result.getArtifact().getFile());
-    }
-    
-    private ArtifactResult resolveArtifact(final String artifactId) {
-        final Artifact artifact = new DefaultArtifact(artifactId);
-        final ArtifactRequest req =
-                new ArtifactRequest(artifact, projectRepos, null);            
-        try {
-            return repoSystem.resolveArtifact(repoSession, req);
-        } catch (final ArtifactResolutionException e) {
-            throw new RuntimeException("TODO: fixme", e); // FIXME
-        }
+    public void setArtifactResolver(final ArtifactResolver artifactResolver) {
+        this.artifactResolver = artifactResolver;
     }
 }
