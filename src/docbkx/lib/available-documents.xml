@@ -24,23 +24,28 @@
   xmlns:xlink="http://www.w3.org/1999/xlink">
 
   <info>
-    <title>Available Collections</title>
+    <title>Available Documents</title>
 
     <pubdate>2012-06-15</pubdate>
 
     <abstract>
       <para>
-        Description of the core collections available as part of all XPOM
-        transformations.
+        Description of the core documents and collections available as part of
+        all XPOM transformations.
       </para>
     </abstract>
   </info>
   
   <para>
-    XPOM provides access to all the POMs in the current reactor build via the
-    <code>urn:xpom:reactor-projects</code> URI. The <code>base-uri</code> for
-    each document is the filesystem location of its POM. This is particularly
-    useful when combined with the <code>aggregate</code> parameter, which
-    causes any of the XPOM goals to execute only once per build.
+    XPOM provides access to all the POMs in the current reactor build as an
+    XPath collection via the <code>urn:xpom:reactor-projects</code> URI.
+    
+    The <code>base-uri</code> for each document is the filesystem location of
+    its POM.
+    
+    This is particularly useful when combined with the <code>aggregate</code>
+    parameter, which causes any of the XPOM goals to execute only once per
+    build, in whichever project exists at the execution root directory (i.e.
+    the directory Maven was launched from).
   </para>
 </article>
