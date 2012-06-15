@@ -54,6 +54,15 @@ import org.twdata.maven.mojoexecutor.MojoExecutor.Element;
  */
 public abstract class AbstractXPOMMojo extends AbstractMojo {
     /**
+     * Base directory of the project.
+     *
+     * @parameter default-value="${basedir}"
+     * @required
+     * @readonly
+     */
+    private File basedir;
+    
+    /**
      * The charset to use when reading and writing source files; defaults
      * to platform encoding.
      * 
@@ -62,9 +71,7 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     private String sourceEncoding = Charset.defaultCharset().name();
 
     /**
-     * @parameter
-     *  expression="${scmPluginVersion}"
-     *  default-value="1.1"
+     * @parameter default-value="1.1"
      */
     private String scmPluginVersion = "1.1";
     
@@ -111,7 +118,12 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      * @parameter expression="${session}"
      */
     private MavenSession session;
-        
+
+    /**
+     * @parameter expression="${aggregate}" default-value="false"
+     */
+    private boolean aggregate = false;
+
     /**
      * @component
      * @required
@@ -122,6 +134,13 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      * @component
      */
     private TraxHelper trax;
+    
+    protected final File getBaseDir() { return basedir; }
+    
+    protected final boolean isRunningInExecutionRoot() {
+        final String rootDir = session.getExecutionRootDirectory();
+        return rootDir.equalsIgnoreCase(basedir.toString());
+    }
     
     protected final TraxHelper getTrax() { return trax; }
     
@@ -193,6 +212,11 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     }
     
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (aggregate && !isRunningInExecutionRoot()) {
+            getLog().info("Skipping execution due to request to only run once");
+            return;
+        }
+        
         try {
             executeInternal();
         } catch (final XPOMException e) {
