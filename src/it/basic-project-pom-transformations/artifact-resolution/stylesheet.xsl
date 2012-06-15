@@ -16,15 +16,13 @@
   </xsl:template>
   
   <xsl:template match="/project">
-    <xsl:variable name="parentPOM" as="document-node()">
-      <xsl:sequence select="
-        xpom:resolve-artifact-pom(
-          string-join(
-            (parent/groupId, parent/artifactId, 'pom', parent/version),
-            ':'
-          )
-        )" />
-    </xsl:variable>
+    <xsl:variable name="parentPOM" as="document-node()" select="
+      xpom:resolve-artifact-pom(
+        string-join(
+          (parent/groupId, parent/artifactId, 'pom', parent/version),
+          ':'
+        )
+      )" />
     <from-parent>
       <test.prop.1>
         <xsl:value-of select="$parentPOM/project/properties/test.prop.1" />

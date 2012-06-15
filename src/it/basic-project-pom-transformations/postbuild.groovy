@@ -1,5 +1,7 @@
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.fail;
 
+import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 
 XMLUnit.setIgnoreWhitespace(true);
@@ -12,7 +14,10 @@ new XmlSlurper().parseText(
     final File testDir = new File(test, "target/xpom-test-results");
     final File expected = new File(testDir, "expected/pom.xml");
     final File actual = new File(testDir, "actual/pom.xml");
-    assertXMLEqual("Failed to validate: $test", expected.text, actual.text);
+    println "validating: $test";
+    if (!XMLUnit.compareXML(expected.text, actual.text).similar()) {
+        fail("Failed to validate testcase: $test");
+    }
 };
 
 return true;

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  #%L
+  XPOM Maven Plugin
+  %%
+  Copyright (C) 2012 David Thomas Hume
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<article xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <info>
+    <title>XPOM Filter and Identity Stylesheets</title>
+
+    <pubdate>2012-06-13</pubdate>
+
+    <abstract>
+      <para>
+        Description of the filter and identity utility stylesheets supplied
+        by default with the xpom-maven-plugin.
+      </para>
+    </abstract>
+  </info>
+  
+  <para>
+    A great number of common transformation tasks boil down to applying one of
+    two general types of transformation to all nodes, with specific
+    templates for those which need special attention.
+    
+    The two basic types of transformation are:
+    
+    <orderedlist>
+      <listitem>
+        <para>
+          The <firstterm>identity transform</firstterm>, which simply copies
+          the current node, recursively applying templates to its children.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The <firstterm>filtering transform</firstterm>, which recursively
+          applyies templates to the current nodes children
+          <emphasis>without</emphasis> copying the node itself.
+        </para>
+      </listitem>
+    </orderedlist>
+    
+    A stylesheet containing only the identity transform will simply produce
+    an output document which is equivalent to the input document, while one
+    containing only the filtering transform would produce an empty document.
+    
+    The definition  of each type of basic transformation is quite
+    straightforward:
+  </para>
+  
+  <example>
+    <title>Identity Transform</title>
+    <programlisting language="xml"><![CDATA[
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+  version="2.0">
+
+  <xsl:template match="/ | @* | node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@* | node()" />
+    </xsl:copy>
+  </xsl:template>
+  
+</xsl:stylesheet>]]></programlisting>
+  </example>
+
+  <example>
+    <title>Filtering Transform</title>
+    <programlisting language="xml"><![CDATA[
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+  version="2.0">
+
+  <xsl:template match="/ | @* | node()">
+    <xsl:apply-templates select="@* | node()" />
+  </xsl:template>
+  
+</xsl:stylesheet>]]></programlisting>
+  </example>
+  
+  <para>
+    I, personally, use one of these two types of transformation as the base
+    for the vast majority of stylesheets that I write. Furthermore, since the
+    majority of XPOM transformations are one-off transformations which either
+    modify existing POM files in place, or else produce completely different
+    documents, it is useful to have an easy mechanism to eliminate the
+    boilerplate base templates. As such, both the filtering and identity
+    transformations are available as part of the base XPOM distribution, and
+    can be imported or included into an XPOM stylesheet using the following
+    URIs:
+    
+    <itemizedlist>
+      <listitem>
+        <para>
+          Identity Transform - <code>urn:xpom:core:identity.xsl</code>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Filtering Transform - <code>urn:xpom:core:filter.xsl</code>
+        </para>
+      </listitem>
+    </itemizedlist> 
+  </para>
+</article>

@@ -32,7 +32,9 @@
     <release version="0.1-SNAPSHOT" date="2012-05-26"
       description="First release, still alpha and subject to change">
       <action dev="dth" type="add">
-        Placeholder
+      <!-- 
+        Initial release, with support for project POM transformation.
+      -->
       </action>
     </release>
   </body>

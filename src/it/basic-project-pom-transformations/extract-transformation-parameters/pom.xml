@@ -14,8 +14,28 @@
   <packaging>pom</packaging>
   
   <properties>
-    <param1>value1</param1>
     <param2>value2</param2>
     <xpom.params>cliParam1=value1,cliParam2=value2</xpom.params>
   </properties>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <configuration>
+          <transformationParameters>
+            <property>
+              <name>param1</name>
+              <value>value1</value>
+            </property>
+            <property>
+              <name>param2</name>
+              <value>${param2}</value>
+            </property>
+          </transformationParameters>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

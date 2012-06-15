@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  #%L
+  XPOM Maven Plugin
+  %%
+  Copyright (C) 2012 David Thomas Hume
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<article xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <info>
+    <title>Internal Namespace</title>
+
+    <pubdate>2012-06-13</pubdate>
+
+    <abstract>
+      <para>
+        Description of the <code>urn:xpom:internal</code> namespace.
+      </para>
+    </abstract>
+  </info>
+  
+  <para>
+    XPOM makes use of an internal namespace in order to implement part of the
+    "bridge" between Java and XSL. The URI of this namespace is
+    <code>urn:xpom:internal</code>. <emphasis>This namespace is internal only
+    </emphasis>; it is subject to unannounced change between releases
+    and should <emphasis>NOT</emphasis> be used directly in XPOM stylesheets.
+    Every attempt is made to suppress it from output, but if you see it:
+    ignore it :-).
+  </para>
+</article>

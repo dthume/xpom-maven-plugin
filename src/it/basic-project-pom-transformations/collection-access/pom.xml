@@ -10,22 +10,6 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>extract-project-coordinates</artifactId>
+  <artifactId>collection-access</artifactId>
   <packaging>pom</packaging>
-  
-  <properties>
-    <useEffectiveModel>true</useEffectiveModel>
-  </properties>
-  
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>@project.groupId@</groupId>
-        <artifactId>@project.artifactId@</artifactId>
-        <configuration>
-          <useEffectivePOM>true</useEffectivePOM>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

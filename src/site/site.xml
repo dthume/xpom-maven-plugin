@@ -29,5 +29,9 @@
       <item name="Introduction" href="index.html"/>
       <item name="Usage" href="usage.html"/>
     </menu>
+    <menu name="Standard Library">
+      <item name="Filter &amp; Identity" href="lib/filter-and-identity.html" />
+      <item name="Internal" href="lib/internal.html"/>
+    </menu>
   </body>
 </project>

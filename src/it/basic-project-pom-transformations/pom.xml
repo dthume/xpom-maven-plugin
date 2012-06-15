@@ -25,6 +25,7 @@
     <module>extract-transformation-parameters</module>
     <module>artifact-resolution</module>
     <module>read-property-string</module>
+    <module>collection-access</module>
   </modules>
 
   <build>
@@ -40,18 +41,6 @@
           <outputFile>
             ${xpom.testcase.results.dir}/actual/pom.xml
           </outputFile>
-          <transformationParameters>
-            <property>
-              <name>param1</name>
-              <value>${param1}</value>
-            </property>
-            <property>
-              <name>param2</name>
-              <value>${param2}</value>
-            </property>
-          </transformationParameters>
-          <useModel>${useModel}</useModel>
-          <useEffectiveModel>${useEffectiveModel}</useEffectiveModel>
         </configuration>
         <executions>
           <execution>
