@@ -100,6 +100,14 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     private boolean editPOMInSCM = false;
     
     /**
+     * Execute the mojo once for a single reactor build if {@code true},
+     * otherwise once per project (the default).
+     *
+     * @parameter expression="${aggregate}" default-value="false"
+     */
+    private boolean aggregate = false;
+    
+    /**
      * @readonly
      * @parameter expression="${reactorProjects}"
      */
@@ -118,11 +126,6 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      * @parameter expression="${session}"
      */
     private MavenSession session;
-
-    /**
-     * @parameter expression="${aggregate}" default-value="false"
-     */
-    private boolean aggregate = false;
 
     /**
      * @component
