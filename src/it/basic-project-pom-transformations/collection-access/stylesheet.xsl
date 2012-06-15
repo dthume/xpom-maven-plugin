@@ -13,12 +13,11 @@
   <xsl:template match="/project">
     <xsl:variable name="reactor" as="document-node()*" select="
       collection('urn:xpom:reactor-projects')" />
+    <xsl:variable name="artifactResolution" as="element()" select="
+      $reactor/project[artifactId = 'artifact-resolution']" />
     <result>
       <extract-project-coordinates-found>
-        <xsl:sequence select="
-          exists(
-            $reactor/project[artifactId = 'artifact-resolution']
-          )" />
+        <xsl:sequence select="exists($artifactResolution)" />
       </extract-project-coordinates-found>
     </result>
   </xsl:template>

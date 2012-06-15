@@ -14,7 +14,6 @@ new XmlSlurper().parseText(
     final File testDir = new File(test, "target/xpom-test-results");
     final File expected = new File(testDir, "expected/pom.xml");
     final File actual = new File(testDir, "actual/pom.xml");
-    println "validating: $test";
     if (!XMLUnit.compareXML(expected.text, actual.text).similar()) {
         fail("Failed to validate testcase: $test");
     }

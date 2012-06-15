@@ -107,15 +107,17 @@ public class CollectionURIResolverAdaptor implements CollectionURIResolver {
 
         public NodeInfo next() throws XPathException {
             if (iterator.hasNext()) {
-                current = new DocumentWrapper(nextNode(), null, config);
+                final Source next = iterator.next();
+                final Node node = toNode(next);
+                current = new DocumentWrapper(node, next.getSystemId(), config);
                 position++;
                 return current;
             } else return null;
         }
         
-        private Node nextNode() throws XPathException {
+        private Node toNode(final Source source) throws XPathException {
             try {
-                return trax.toNode(iterator.next());
+                return trax.toNode(source);
             } catch (final TransformerException e) {
                 throw new XPathException(e);
             }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  #%L
+  XPOM Maven Plugin
+  %%
+  Copyright (C) 2012 David Thomas Hume
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<article xmlns="http://docbook.org/ns/docbook"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <info>
+    <title>Available Collections</title>
+
+    <pubdate>2012-06-15</pubdate>
+
+    <abstract>
+      <para>
+        Description of the core collections available as part of all XPOM
+        transformations.
+      </para>
+    </abstract>
+  </info>
+  
+  <para>
+    XPOM provides access to all the POMs in the current reactor build via the
+    <code>urn:xpom:reactor-projects</code> URI. The <code>base-uri</code> for
+    each document is the filesystem location of its POM. This is particularly
+    useful when combined with the <code>aggregate</code> parameter, which
+    causes any of the XPOM goals to execute only once per build.
+  </para>
+</article>

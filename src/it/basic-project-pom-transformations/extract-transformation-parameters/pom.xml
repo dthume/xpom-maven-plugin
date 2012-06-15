@@ -15,7 +15,7 @@
   
   <properties>
     <param2>value2</param2>
-    <xpom.params>cliParam1=value1,cliParam2=value2</xpom.params>
+    <params>cliParam1=value1,cliParam2=value2</params>
   </properties>
   
   <build>

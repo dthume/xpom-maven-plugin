@@ -35,7 +35,6 @@ import javax.xml.transform.URIResolver;
 
 import net.sf.saxon.Configuration;
 import net.sf.saxon.TransformerFactoryImpl;
-import net.sf.saxon.lib.CollectionURIResolver;
 import net.sf.saxon.lib.StandardOutputResolver;
 
 import org.codehaus.plexus.component.annotations.Component;

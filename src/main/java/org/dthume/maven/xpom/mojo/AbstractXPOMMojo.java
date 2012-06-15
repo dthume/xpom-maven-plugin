@@ -56,9 +56,9 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     /**
      * Base directory of the project.
      *
-     * @parameter default-value="${basedir}"
      * @required
      * @readonly
+     * @parameter default-value="${basedir}"
      */
     private File basedir;
     
@@ -66,6 +66,7 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      * The charset to use when reading and writing source files; defaults
      * to platform encoding.
      * 
+     * @readonly
      * @parameter expression="${project.build.sourceEncoding}"
      */
     private String sourceEncoding = Charset.defaultCharset().name();
@@ -95,7 +96,7 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      * Whether or not to perform an {@code scm:edit} on the project
      * {@code pom.xml} before transforming it.
      * 
-     * @parameter expression="${editPOMInSCM}" default-value="false"
+     * @parameter expression="${useSCM}" default-value="false"
      */
     private boolean editPOMInSCM = false;
     
