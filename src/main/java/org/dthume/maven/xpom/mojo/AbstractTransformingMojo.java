@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -42,6 +43,7 @@ import org.dthume.maven.xpom.impl.DefaultArtifactResolver;
 import org.dthume.maven.xpom.impl.DefaultTransformationContext;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
 
 public abstract class AbstractTransformingMojo extends AbstractXPOMMojo {
@@ -85,6 +87,11 @@ public abstract class AbstractTransformingMojo extends AbstractXPOMMojo {
     protected RepositorySystemSession repoSession;
     
     /**
+     * @component
+     */
+    protected RemoteRepositoryManager repoManager;
+    
+    /**
      * Remote repositories to use for the resolution of project dependencies.
      *
      * @parameter default-value="${project.remoteProjectRepositories}"
@@ -101,6 +108,11 @@ public abstract class AbstractTransformingMojo extends AbstractXPOMMojo {
      */
     protected List<RemoteRepository> pluginRepos;
 
+    /**
+     * @component
+     */
+    private ModelBuilder modelBuilder;
+    
     /**
      * @component roleHint="xsl"
      */
@@ -155,8 +167,8 @@ public abstract class AbstractTransformingMojo extends AbstractXPOMMojo {
     protected final File getOutputFile() { return outputFile; }
     
     private ArtifactResolver getArtifactResolver() {
-        return new DefaultArtifactResolver(repoSystem, repoSession,
-                projectRepos, pluginRepos);
+        return new DefaultArtifactResolver(repoSystem, repoManager, repoSession,
+                projectRepos, pluginRepos, modelBuilder, getReactorProjects());
     }
     
     protected Map<String, Object> getTransformationParameterMap() {

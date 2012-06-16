@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <from-parent>
   <test.prop.1>value1</test.prop.1>
+  <inherited.execution.found>true</inherited.execution.found>
 </from-parent>

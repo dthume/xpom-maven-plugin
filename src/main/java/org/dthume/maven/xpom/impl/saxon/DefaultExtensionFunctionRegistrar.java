@@ -54,6 +54,7 @@ import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.StringValue;
 
+import org.apache.maven.model.building.ModelBuilder;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.dthume.maven.xpom.api.ArtifactResolver;
@@ -87,8 +88,10 @@ public class DefaultExtensionFunctionRegistrar
             functions.add(new EvaluateExpression(evaluator));
         
         final ArtifactResolver resolver = context.getArtifactResolver();
-        if (null != resolver)
+        if (null != resolver) {
             functions.add(new ResolveArtifactPOM(resolver, config));
+            functions.add(new EffectivePOM(resolver, config));
+        }
         
         for (final ExtensionFunctionDefinition function : functions)
             config.registerExtensionFunction(function);
@@ -297,6 +300,42 @@ public class DefaultExtensionFunctionRegistrar
                     Node node;
                     try {
                         node = trax.toNode(resolver.resolveArtifactPOM(coords));
+                    } catch (final TransformerException e) {
+                        throw new XPathException(e);
+                    }
+                    
+                    final NodeInfo item =
+                            new DocumentWrapper(node, null, configuration);
+                    
+                    return SingletonIterator.makeIterator(item);
+                }
+            };
+        }
+    }
+
+    private class EffectivePOM extends SimpleFunctionDef {
+        private final ArtifactResolver resolver;
+        private final Configuration configuration;
+        
+        EffectivePOM(final ArtifactResolver resolver,
+                final Configuration configuration) {
+            super(FN_PREFIX, FN_NS, "effective-pom",
+                    OPTIONAL_DOCUMENT_NODE, SINGLE_STRING);
+            this.configuration = configuration;
+            this.resolver = resolver;
+        }
+        
+        public ExtensionFunctionCall makeCallExpression() {
+            return new ExtensionFunctionCall() {
+                @Override
+                public SequenceIterator<? extends Item> call(
+                        final SequenceIterator<? extends Item>[] args,
+                        final XPathContext xpathContext) throws XPathException {
+                    final String coords = args[0].next().getStringValue();
+                    
+                    Node node;
+                    try {
+                        node = trax.toNode(resolver.resolveEffectivePOM(coords));
                     } catch (final TransformerException e) {
                         throw new XPathException(e);
                     }

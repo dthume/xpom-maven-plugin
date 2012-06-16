@@ -84,6 +84,17 @@
     <xsl:sequence select="internal:resolve-artifact-pom($coordinates)" />
   </xsl:function>
 
+  <doc:doc>
+    <doc:description>
+      Resolve and return the POM for the given coordinates. 
+    </doc:description>
+    <doc:param name="coordinates">The coordinates to resolve </doc:param>
+  </doc:doc>
+  <xsl:function name="xpom:effective-pom" as="document-node()?">
+    <xsl:param name="coordinates" as="xs:string" />
+    <xsl:sequence select="internal:effective-pom($coordinates)" />
+  </xsl:function>
+
   <!--======================= Resolve Placeholders =======================-->
 
   <doc:doc type="mode" for="xpom:resolve-placeholders">
@@ -123,7 +134,11 @@
   </doc:doc>
   <xsl:template name="xpom:resolve-placeholders">
     <xsl:param name="fragment" />
-    <xsl:apply-templates mode="xpom:resolve-placeholders" select="$fragment" />
+    <xsl:param name="pom" as="element()" select="
+      $fragment/ancestor-or-self::pom:project" />
+    <xsl:apply-templates mode="xpom:resolve-placeholders" select="$fragment">
+      <xsl:with-param name="xpom:current-pom" select="$pom" tunnel="yes" />
+    </xsl:apply-templates>
   </xsl:template>
 
   <doc:doc>
@@ -135,7 +150,26 @@
   </doc:doc>
   <xsl:function name="xpom:resolve-placeholders">
     <xsl:param name="fragment" />
-    <xsl:apply-templates mode="xpom:resolve-placeholders" select="$fragment" />
+    <xsl:call-template name="xpom:resolve-placeholders">
+      <xsl:with-param name="fragment" select="$fragment" />
+    </xsl:call-template>
+  </xsl:function>
+
+  <doc:doc>
+    <doc:description>
+      Returns a copy of the supplied fragment, with all element text nodes
+      evaluated in the context of the current POM.
+    </doc:description>
+    <doc:param name="fragment">The fragment to resolve</doc:param>
+    <doc:param name="pom" as="element()" />
+  </doc:doc>
+  <xsl:function name="xpom:resolve-placeholders">
+    <xsl:param name="fragment" />
+    <xsl:param name="pom" as="element()" />
+    <xsl:call-template name="xpom:resolve-placeholders">
+      <xsl:with-param name="fragment" select="$fragment" />
+      <xsl:with-param name="pom" select="$pom" />
+    </xsl:call-template>
   </xsl:function>
   
 </xsl:stylesheet>

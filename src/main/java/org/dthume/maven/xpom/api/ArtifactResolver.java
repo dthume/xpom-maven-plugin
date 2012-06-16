@@ -23,4 +23,6 @@ import javax.xml.transform.Source;
 
 public interface ArtifactResolver {
     Source resolveArtifactPOM(final String coords);
+    
+    Source resolveEffectivePOM(final String coords);
 }

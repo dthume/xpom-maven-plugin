@@ -16,17 +16,30 @@
   </xsl:template>
   
   <xsl:template match="/project">
-    <xsl:variable name="parentPOM" as="document-node()" select="
-      xpom:resolve-artifact-pom(
-        string-join(
+    <xsl:variable name="parentCoords" select="
+      string-join(
           (parent/groupId, parent/artifactId, 'pom', parent/version),
           ':'
-        )
-      )" />
+        )" />
+    <xsl:variable name="parentPOM" as="document-node()" select="
+      xpom:resolve-artifact-pom($parentCoords)" />
+    <xsl:variable name="effectiveParent" as="document-node()" select="
+      xpom:effective-pom($parentCoords)" />
     <from-parent>
       <test.prop.1>
         <xsl:value-of select="$parentPOM/project/properties/test.prop.1" />
       </test.prop.1>
+      <inherited.execution.found>
+        <xsl:value-of select="
+          exists(
+            $effectiveParent/project/build/plugins/plugin[
+              artifactId = 'xpom-maven-plugin'
+            ]/executions/execution[
+              id = 'execute-test-case'
+              and phase = 'integration-test'
+            ]
+          )" />
+      </inherited.execution.found>
     </from-parent>
   </xsl:template>
 </xsl:stylesheet>
