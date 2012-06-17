@@ -46,7 +46,7 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
 import org.sonatype.aether.repository.RemoteRepository;
 
-public abstract class AbstractTransformingMojo extends AbstractXPOMMojo {
+public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     /**
      * The XSL stylesheet to apply.
      *

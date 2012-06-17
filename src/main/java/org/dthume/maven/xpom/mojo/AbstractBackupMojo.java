@@ -25,11 +25,12 @@ import org.apache.maven.plugin.MojoFailureException;
 /**
  * @author dth
  */
-public abstract class AbstractScmMojo extends AbstractXPOMMojo {
+public abstract class AbstractBackupMojo extends AbstractSCMAwareMojo {
     @Override
     protected final void executeInternal()
             throws MojoExecutionException, MojoFailureException {
         if (isLocalSCM()) executeLocally();
+        else getLog().info("Backups are disabled; skipping mojo execution");
     }
     
     protected abstract void executeLocally()

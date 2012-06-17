@@ -70,35 +70,6 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      * @parameter expression="${project.build.sourceEncoding}"
      */
     private String sourceEncoding = Charset.defaultCharset().name();
-
-    /**
-     * @parameter default-value="1.1"
-     */
-    private String scmPluginVersion = "1.1";
-    
-    /**
-     * @required
-     * @parameter
-     *  expression="${backupPomFile}"
-     *  default-value="${project.basedir}/pom.xml.xpom-backup"
-     */
-    private File backupPomFile;
-    
-    /**
-     * Whether or not to disable the "poor mans SCM" facilities provided by this
-     * plugin.
-     * 
-     * @parameter expression="${noBackups}" default-value="false"
-     */
-    private boolean disableBackups = false;
-
-    /**
-     * Whether or not to perform an {@code scm:edit} on the project
-     * {@code pom.xml} before transforming it.
-     * 
-     * @parameter expression="${useSCM}" default-value="false"
-     */
-    private boolean editPOMInSCM = false;
     
     /**
      * Execute the mojo once for a single reactor build if {@code true},
@@ -152,67 +123,23 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     
     protected final MavenProject getProject() { return project; }
     
+    protected final MavenSession getSession() { return session; }
+    
+    protected final BuildPluginManager getPluginManager() {
+        return pluginManager;
+    }
+    
     protected final List<MavenProject> getReactorProjects() {
         return Collections.unmodifiableList(reactorProjects);
     }
     
     protected final File getProjectPOMFile() { return project.getFile(); }
     
-    protected final File getBackupPOMFile() { return backupPomFile; }
-    
-    protected final boolean isLocalSCM() { return !disableBackups; }
-    
     protected final ExpressionEvaluator getExpressionEvaluator() {
         final MojoExecution execution = new MojoExecution(new MojoDescriptor());
         final PluginParameterExpressionEvaluator evaluator =
                 new PluginParameterExpressionEvaluator(session, execution);
         return new DefaultExpressionEvaluator(evaluator);
-    }
-    
-    protected final void prepareProjectPOMForTransformation()
-        throws MojoExecutionException, MojoFailureException {
-        if (editPOMInSCM)
-            executeSCMMojo("edit", element("includes", "pom.xml"));
-        
-        if (isLocalSCM())
-            prepareBackupPOMFile();
-    }
-    
-    private void prepareBackupPOMFile()
-            throws MojoExecutionException, MojoFailureException{
-        if (getBackupPOMFile().exists()) {
-            throw new MojoFailureException("Backup file already exists: " +
-                    getBackupPOMFile());
-        }
-        
-        try {
-            copy(new XmlStreamReader(getProjectPOMFile()),
-                 new XmlStreamWriter(getBackupPOMFile()));
-        } catch (final IOException e) {
-            throw new MojoFailureException("Failed to backup POM file");
-        }
-    }
-    
-    protected final void executeSCMMojo(String goal, Element...config)
-            throws MojoExecutionException, MojoFailureException {
-        executeMojo(
-                plugin(
-                        "org.apache.maven.plugins",
-                        "maven-scm-plugin",
-                        scmPluginVersion
-                ),
-                goal,
-                configuration(config),
-                executionEnvironment(project, session, pluginManager)
-        );
-    }
-    
-    protected final Element el(String name, String value) {
-        return element(name, value);
-    }
-    
-    protected final Element el(String name, Element...els) {
-        return element(name, els);
     }
     
     public void execute() throws MojoExecutionException, MojoFailureException {

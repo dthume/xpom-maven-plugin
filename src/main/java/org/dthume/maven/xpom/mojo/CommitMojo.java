@@ -29,7 +29,7 @@ import org.apache.maven.plugin.MojoFailureException;
  * 
  * @author dth
  */
-public final class CommitMojo extends AbstractScmMojo {
+public final class CommitMojo extends AbstractBackupMojo {
     protected final void executeLocally()
             throws MojoExecutionException, MojoFailureException {
         if (getBackupPOMFile().exists() && getBackupPOMFile().delete())

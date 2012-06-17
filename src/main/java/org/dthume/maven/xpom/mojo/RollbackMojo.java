@@ -29,7 +29,7 @@ import org.apache.maven.plugin.MojoFailureException;
  * 
  * @author dth
  */
-public final class RollbackMojo extends AbstractScmMojo {
+public final class RollbackMojo extends AbstractBackupMojo {
     protected void executeLocally()
             throws MojoExecutionException, MojoFailureException {
         if (getBackupPOMFile().exists() && getProjectPOMFile().delete()) {

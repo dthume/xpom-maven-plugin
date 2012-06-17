@@ -85,23 +85,41 @@
         </xsl:element>
       </xsl:if>
       
-      <xsl:text>&#xA;</xsl:text>
-      <xsl:sequence select="template:indent(1)" />
-      <xsl:comment>
-        <xsl:sequence select="template:indent(2)" />
-        <xsl:text>Simple template which plays well with all</xsl:text>
-        <xsl:text> the available base transforms.</xsl:text>
-        <xsl:sequence select="template:indent(2)" />
-        <xsl:text>Modify or replace as appropriate.</xsl:text>
+      <xsl:element name="xsl:output">
+        <xsl:attribute name="method" select="'xml'" />
+        <xsl:attribute name="indent" select="'yes'" />
+      </xsl:element>
+      
+      <xsl:if test="0 lt string-length($baseTransformStylesheet)">
+        <xsl:text>&#xA;</xsl:text>
         <xsl:sequence select="template:indent(1)" />
-      </xsl:comment>
-      <xsl:sequence select="template:indent(1)" />
+        <xsl:comment>
+          <xsl:sequence select="template:indent(2)" />
+          <xsl:text>Simple template which plays well with all</xsl:text>
+          <xsl:text> the available base transforms.</xsl:text>
+          <xsl:sequence select="template:indent(2)" />
+          <xsl:text>Modify or replace as appropriate.</xsl:text>
+          <xsl:sequence select="template:indent(1)" />
+        </xsl:comment>
+        <xsl:sequence select="template:indent(1)" />
+      </xsl:if>
       <xsl:element name="xsl:template">
         <xsl:attribute name="match" select="'/'" />
-        <xsl:element name="xsl:apply-templates">
-          <xsl:attribute name="mode" select="'#current'" />
-          <xsl:attribute name="select" select="'@* | node()'" />
-        </xsl:element>
+        <xsl:choose>
+          <xsl:when test="0 lt string-length($baseTransformStylesheet)">
+            <xsl:element name="xsl:apply-templates">
+              <xsl:attribute name="mode" select="'#current'" />
+              <xsl:attribute name="select" select="'@* | node()'" />
+            </xsl:element>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:sequence select="template:indent(2)" />
+            <xsl:comment>
+              <xsl:text> TODO </xsl:text>
+            </xsl:comment>
+            <xsl:sequence select="template:indent(1)" />
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:element>
     </exe:stylesheet>
   </xsl:template>

@@ -36,12 +36,122 @@
   </info>
   
   <section>
+    <title>Writing XPOM XSLs</title>
+    <para>
+      One of the biggest hurdles in getting started with new XML based
+      technologies is that one tends to be plagued with hard to remember URIs.
+      To help with this, the plugin provides a
+      <code xlink:href="new-mojo.html">new</code> goal which can
+      be used to generate base XPOM stylesheets, with common imports and
+      namespaces declared, from which to begin authoring. At a minimum, you
+      can use something like:
+    </para>
+    
+    <informalexample>
+      <screen>$ mvn xpom:new -DoutputFile=src/xpom/my-transform.xsl</screen>
+    </informalexample>
+    
+    <para>
+      which will result in the creation of
+      <filename class="devicefile">src/xpom/my-transform.xsl</filename> with
+      content similar to the following:
+    </para>
+    
+    <informalexample>
+      <programlisting language="xml"
+><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:pom="http://maven.apache.org/POM/4.0.0"
+                xmlns:template="urn:xpom:template"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns:xpom="urn:xpom:core"
+                exclude-result-prefixes="#all"
+                version="2.0">
+
+    <xsl:import href="urn:xpom:core"/>
+
+    <xsl:output method="xml" indent="yes"/>
+
+    <xsl:template match="/">
+        <!-- TODO -->
+    </xsl:template>
+</xsl:stylesheet>]]></programlisting>
+    </informalexample>
+    
+    <para>
+      It is possible to have the mojo automatically add the required
+      <tag class="element">xsl:import</tag> for the standard
+      <link xlink:href="lib/filter-and-identity.html">filter and identity</link>
+      stylesheets:
+    </para>
+
+    <informalexample>
+      <screen>
+$ mvn xpom:new -DoutputFile=src/xpom/my-transform.xsl -Dbase=identity</screen>
+    </informalexample>
+
+    <para>To produce a file similar to:</para>
+
+    <informalexample>
+      <programlisting language="xml"
+><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:pom="http://maven.apache.org/POM/4.0.0"
+                xmlns:template="urn:xpom:template"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns:xpom="urn:xpom:core"
+                exclude-result-prefixes="#all"
+                version="2.0">
+
+    <xsl:import href="urn:xpom:core"/>
+
+    <xsl:import href="urn:xpom:core:identity"/>
+
+    <xsl:output method="xml" indent="yes"/>
+
+    <!--
+         Simple template which plays well with all the available base transforms. 
+         Modify or replace as appropriate. 
+    -->
+    <xsl:template match="/">
+        <xsl:apply-templates mode="#current" select="@* | node()"/>
+    </xsl:template>
+</xsl:stylesheet>
+]]></programlisting>
+    </informalexample>
+    
+    <para>
+      Since it is common to <tag class="attribute">match</tag> /
+      <tag class="attribute">select</tag> nodes from the POM namespace, and
+      to produce POM namespaced nodes as output, the goal can be configured
+      to add a default namespace declaration (<tag
+      class="namespace">xmlns</tag>) and / or a <tag class="attribute"
+      >xpath-default-namespace</tag> attribute to the <tag class="element"
+      >xsl:stylesheet</tag> via the <code
+      xlink:href="new-mojo.html#defaultOutputNamespace"
+      >defaultOutputNamspace</code> and
+      <code xlink:href="new-mojo.html#defaultXPathNamespace"
+      >defaultXPathNamespace</code> properties, which can be specified on
+      the command line using <code>-DdefaultOutputNS</code> and
+      <code>-DdefaultXPathNS</code> respectively.
+    </para>
+    
+    <para>
+      One final point to note about the <code>new</code> goal is that it will
+      not, by default, overwrite existing files (failing instead). If you wish
+      to overwrite an existing file then set the <code
+      xlink:href="new-mojo.html#overwrite">overwrite</code> property to
+      <code>true</code>, which can be accomplished using
+      <code>-Doverwrite</code> on the command line. 
+    </para>
+  </section>
+    
+  <section>
     <title>Transforming the current POM</title>
     <para>
       The plugin aims to provide first class support for performing
-      transformations on the current POM via the <code>project</code> goal,
-      and optionally the <code>commit</code> and
-      <code>rollback</code> goals.
+      transformations on the current POM via the <code
+      xlink:href="project-mojo.html">project</code> goal,
+      and optionally the <code xlink:href="commit-mojo.html">commit</code> and
+      <code xlink:href="rollback-mojo.html">rollback</code> goals.
     </para>
     <section>
       <title>Controlling the input</title>
@@ -52,16 +162,17 @@
         with the <emphasis>model</emphasis> for the current project, that is
         to say, the model Maven has constructed by reading the original POM
         file reserialized back to XML, then you can set the
-        <code>useModel</code> parameter to <code>true</code>, which by
-        default can be accomplished by using <code>-DuseModel</code> on the
-        command line.
+        <code xlink:href="project-mojo.html#useModel">useModel</code> parameter
+        to <code>true</code>, which by default can be accomplished by using
+        <code>-DuseModel</code> on the command line.
       </para>
       <para>
         If, on the other hand, you want to transform the
         <emphasis>effective</emphasis> model, that is to say, the model
         constructed by Maven taking into account both inheritance and
         interpolation reserialized back to XML, then you can set the
-        <code>useEffectiveModel</code> parameter to <code>true</code>,
+        <code xlink:href="project-mojo.html#useEffectiveModel"
+        >useEffectiveModel</code> parameter to <code>true</code>,
         which by default can be accomplished by using
         <code>-DuseEffectiveModel</code> on the command line.
       </para>
@@ -70,24 +181,29 @@
       <title>POM Backup</title>
       <para>
         Transforming project POMs is, obviously, a risky business. This is the
-        reason for the <code>dryRun</code> parameter, which causes the
-        <code>project</code> goal to simply write its output to the console.
+        reason for the <code xlink:href="project-mojo.html#dryRun">dryRun</code>
+        parameter, which causes the <code>project</code> goal to simply write
+        its output to the console.
         
         As a further step, however, the goal also employs the use of a basic
         backup / restore strategy for POM files, which is enabled by default.  
       </para>
       <para>
         The entire backup policy can be disabled via the
-        <code>disableBackups</code> parameter (which by default can be
+        <code xlink:href="project-mojo.html#disableBackups"
+        >disableBackups</code> parameter (which by default can be
         specified on the command line using <code>-DnoBackups</code>).
       </para>
     </section>
     <section>
       <title>Project SCM Integration</title>
       <para>
-        The <code>editPOMInSCM</code> parameter, which by default can be
+        The <code xlink:href="project-mojo.html#editPOMInSCM"
+        >editPOMInSCM</code> parameter, which by default can be
         specified on the command line using <code>-DeditPOMInSCM</code>, will
-        cause the plugin to execute the <code>edit</code> goal of the
+        cause the plugin to execute the <code
+        xlink:href="http://maven.apache.org/scm/maven-scm-plugin/edit-mojo.html"
+        >edit</code> goal of the
         scm-maven-plugin on the currently executing
         <filename class="devicefile">pom.xml</filename>. This is useful when
         integrating to SCMs such as <link
