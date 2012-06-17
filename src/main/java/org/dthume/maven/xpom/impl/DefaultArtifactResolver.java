@@ -19,7 +19,6 @@
  */
 package org.dthume.maven.xpom.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -29,7 +28,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelBuildingListener;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.resolution.ModelResolver;

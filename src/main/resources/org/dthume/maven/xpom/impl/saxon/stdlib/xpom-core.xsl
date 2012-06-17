@@ -95,6 +95,191 @@
     <xsl:sequence select="internal:effective-pom($coordinates)" />
   </xsl:function>
 
+  <!--====================== Coordinate Extraction =======================-->
+
+  <doc:doc type="mode" for="xpom:extract-coordinates">
+    <doc:description>
+      Extract coordinate details for various types of artifacts defined in the
+      POM.
+    </doc:description>
+  </doc:doc>
+
+  <doc:doc>
+    <doc:description>
+      Extract project coordinates, taking into account defaults, and parent
+      POM information
+    </doc:description>
+  </doc:doc>
+  <xsl:template mode="xpom:extract-coordinates" match="pom:project">
+    <artifact>
+      <groupId>
+        <xsl:value-of select="(pom:groupId, pom:parent/pom:version)[1]" />
+      </groupId>
+      <artifactId>
+        <xsl:value-of select="pom:artifactId" />
+      </artifactId>
+      <type>
+        <xsl:value-of select="(pom:packaging, 'jar')[1]" />
+      </type>
+      <version>
+        <xsl:value-of select="(pom:version, pom:parent/pom:version)[1]" />
+      </version>
+    </artifact>
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Extract project parent coordinates.
+    </doc:description>
+  </doc:doc>  
+  <xsl:template mode="xpom:extract-coordinates" match="pom:parent">
+    <artifact>
+      <groupId>
+        <xsl:value-of select="(pom:groupId, pom:parent/pom:version)[1]" />
+      </groupId>
+      <artifactId><xsl:value-of select="pom:artifactId" /></artifactId>
+      <type>pom</type>
+      <version>
+        <xsl:value-of select="(pom:version, pom:parent/pom:version)[1]" />
+      </version>
+    </artifact>    
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Extract project plugin coordinates.
+    </doc:description>
+  </doc:doc>  
+  <xsl:template mode="xpom:extract-coordinates" match="pom:plugin">
+    <artifact>
+      <groupId><xsl:value-of select="pom:groupId" /></groupId>
+      <artifactId><xsl:value-of select="pom:artifactId" /></artifactId>
+      <type>jar</type>
+      <version><xsl:value-of select="pom:version" /></version>
+    </artifact>    
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Extract project extension coordinates.
+    </doc:description>
+  </doc:doc>
+  <xsl:template mode="xpom:extract-coordinates" match="pom:extension">
+    <artifact>
+      <groupId><xsl:value-of select="pom:groupId" /></groupId>
+      <artifactId><xsl:value-of select="pom:artifactId" /></artifactId>
+      <type>jar</type>
+      <xsl:if test="pom:classifier">
+        <classifier><xsl:value-of select="pom:classifier" /></classifier>
+      </xsl:if>
+      <version><xsl:value-of select="pom:version" /></version>
+    </artifact>    
+  </xsl:template>
+  
+  <doc:doc>
+    <doc:description>
+      Extract project dependency coordinates.
+    </doc:description>
+  </doc:doc>
+  <xsl:template mode="xpom:extract-coordinates" match="pom:dependency">
+    <artifact>
+      <groupId><xsl:value-of select="pom:groupId" /></groupId>
+      <artifactId><xsl:value-of select="pom:artifactId" /></artifactId>
+      <type>jar</type>
+      <xsl:if test="pom:classifier">
+        <classifier><xsl:value-of select="pom:classifier" /></classifier>
+      </xsl:if>
+      <version><xsl:value-of select="pom:version" /></version>
+    </artifact>
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Extract coordinate details for various types of artifacts defined in the
+      POM.
+    </doc:description>
+    <doc:param name="el">The item to extract coordinates from</doc:param>
+  </doc:doc>
+  <xsl:template name="xpom:extract-coordinates" as="element()">
+    <xsl:param name="el" />
+    <xsl:apply-templates mode="xpom:extract-coordinates" select="$el" />
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Extract coordinate details for various types of artifacts defined in the
+      POM.
+    </doc:description>
+    <doc:param name="el">The item to extract coordinates from</doc:param>
+  </doc:doc>
+  <xsl:function name="xpom:extract-coordinates" as="element()">
+    <xsl:param name="el" />
+    <xsl:call-template name="xpom:extract-coordinates">
+      <xsl:with-param name="el" select="$el" />
+    </xsl:call-template>
+  </xsl:function>
+
+  <doc:doc>
+    <doc:description>
+      Convert a fully specified set of coordinate details (as returned by
+      xpom:extract-coordinates) into string format, suitable for passing to
+      xpom:resolve-pom.
+    </doc:description>
+    <doc:param name="el">The coordinates to stringify</doc:param>
+  </doc:doc>
+  <xsl:template name="xpom:to-coordinate-string" as="xs:string">
+    <xsl:param name="el" />
+    <xsl:value-of select="
+      string-join(
+        ($el/groupId, $el/artifactId, $el/type, $el/classifier, $el/version),
+        ':'
+      )" />
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Convert a fully specified set of coordinate details (as returned by
+      xpom:extract-coordinates) into string format, suitable for passing to
+      xpom:resolve-pom.
+    </doc:description>
+    <doc:param name="el">The coordinates to stringify</doc:param>
+  </doc:doc>
+  <xsl:function name="xpom:to-coordinate-string" as="xs:string">
+    <xsl:param name="el" />
+    <xsl:call-template name="xpom:to-coordinate-string">
+      <xsl:with-param name="el" select="$el" />
+    </xsl:call-template>
+  </xsl:function>
+
+  <doc:doc>
+    <doc:description>
+      Extract the coordinates of various types of items in the POM, and
+      convert them into string form; equivalent to
+      xpom:to-coordinate-string(xpom:extract-coordinates($el)).
+    </doc:description>
+    <doc:param name="el">The item to extract string coordinates from</doc:param>
+  </doc:doc>
+  <xsl:template name="xpom:extract-coordinate-string" as="xs:string">
+    <xsl:param name="el" />
+    <xsl:value-of select="
+      xpom:to-coordinate-string(xpom:extract-coordinates($el))" />
+  </xsl:template>
+
+  <doc:doc>
+    <doc:description>
+      Extract the coordinates of various types of items in the POM, and
+      convert them into string form; equivalent to
+      xpom:to-coordinate-string(xpom:extract-coordinates($el)).
+    </doc:description>
+    <doc:param name="el">The item to extract string coordinates from</doc:param>
+  </doc:doc>
+  <xsl:function name="xpom:extract-coordinate-string" as="xs:string">
+    <xsl:param name="el" />
+    <xsl:call-template name="xpom:extract-coordinate-string">
+      <xsl:with-param name="el" select="$el" />
+    </xsl:call-template>
+  </xsl:function>
+
   <!--======================= Resolve Placeholders =======================-->
 
   <doc:doc type="mode" for="xpom:resolve-placeholders">
