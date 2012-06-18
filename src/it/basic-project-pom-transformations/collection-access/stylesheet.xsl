@@ -13,12 +13,24 @@
   <xsl:template match="/project">
     <xsl:variable name="reactor" as="document-node()*" select="
       collection('urn:xpom:reactor-projects')" />
+    <xsl:variable name="effectiveReactor" as="document-node()*" select="
+      collection('urn:xpom:reactor-projects?effective=true')" />
     <xsl:variable name="artifactResolution" as="element()" select="
       $reactor/project[artifactId = 'artifact-resolution']" />
     <result>
       <extract-project-coordinates-found>
         <xsl:sequence select="exists($artifactResolution)" />
       </extract-project-coordinates-found>
+      <extract-effective-execution-found>
+        <xsl:sequence select="
+          exists(
+            $effectiveReactor/project[
+              artifactId = 'artifact-resolution'
+            ]/build/plugins/plugin[
+              artifactId = 'xpom-maven-plugin'
+            ]
+          )" />
+      </extract-effective-execution-found>
     </result>
   </xsl:template>
 </xsl:stylesheet>

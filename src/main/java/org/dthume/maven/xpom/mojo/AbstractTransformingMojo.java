@@ -20,6 +20,7 @@
 package org.dthume.maven.xpom.mojo;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,10 @@ import org.dthume.maven.xpom.api.ArtifactResolver;
 import org.dthume.maven.xpom.api.CollectionResolver;
 import org.dthume.maven.xpom.api.POMTransformer;
 import org.dthume.maven.xpom.api.TransformationContext;
+import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.DefaultArtifactResolver;
 import org.dthume.maven.xpom.impl.DefaultTransformationContext;
+import org.dthume.maven.xpom.impl.XPOMUtil;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
@@ -185,36 +188,73 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
         return new Properties();
     }
     
+    private final static String REACTOR_PROJECTS =
+            "urn:xpom:reactor-projects";
+    
+    private final static String EFFECTIVE_REACTOR_PROJECTS =
+            REACTOR_PROJECTS + "?effective=true";
+    
     private CollectionResolver getCollectionResolver() {
-        return new CollectionResolver() {
-            public Iterable<Source> resolve(final String href,
-                    final String base) throws TransformerException {
-                if ("urn:xpom:reactor-projects".equals(href)) {
-                    return new ReactorResolver();
-                }
-                return null;
+        return new BuiltinCollectionResolver();
+    }
+    
+    private final class BuiltinCollectionResolver
+        implements CollectionResolver {
+        
+        public Iterable<Source> resolve(final String href,
+                final String base) throws TransformerException {
+            if (REACTOR_PROJECTS.equals(href)) {
+                return new Iterable<Source>() {
+                    public Iterator<Source> iterator() {
+                        return new ReactorIterator();
+                    }
+                };
+            } else if (EFFECTIVE_REACTOR_PROJECTS.equals(href)) {
+                return new Iterable<Source>() {
+                    public Iterator<Source> iterator() {
+                        return new EffectiveReactorIterator();
+                    }
+                };
             }
-        };
-    }
+            return null;
+        }
+    };
     
-    private class ReactorResolver implements Iterable<Source> {
-        public Iterator<Source> iterator() { return new ReactorIterator(); }
-    }
-    
-    private class ReactorIterator implements Iterator<Source> {
+    private abstract class AbstractReactorIterator implements Iterator<Source> {
         private final Iterator<MavenProject> iter;
         
-        ReactorIterator() {
+        AbstractReactorIterator() {
             iter = getReactorProjects().iterator();
         }
         
         public boolean hasNext() { return iter.hasNext(); }
-
-        public Source next() {
-            final MavenProject project = iter.next();
+        public Source next() { return toSource(iter.next()); }
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+        
+        private Source toSource(final MavenProject project) {
+            try {
+                return toSourceInternal(project);
+            } catch (final IOException e) {
+                throw new XPOMException(e);
+            }
+        }
+        
+        protected abstract Source toSourceInternal(MavenProject project)
+            throws IOException;
+    }
+    
+    private class ReactorIterator extends AbstractReactorIterator {
+        protected final Source toSourceInternal(final MavenProject project) {
             return new StreamSource(project.getFile());
         }
-
-        public void remove() {}
+    }
+    
+    private class EffectiveReactorIterator extends AbstractReactorIterator {
+        protected final Source toSourceInternal(final MavenProject project)
+            throws IOException {
+            return XPOMUtil.modelToSource(project.getModel());
+        }
     }
 }
