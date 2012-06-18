@@ -26,6 +26,7 @@ import static org.dthume.maven.xpom.impl.XPOMConstants.xpomName;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -83,6 +84,11 @@ public class XSLTransformer implements POMTransformer {
             final TransformerFactory factory = getConfiguredFactory();
             final Transformer transformer = factory.newTransformer(stylesheet);
             setTransformationParams(transformer);
+            
+            final Properties outputProps =
+                    context.getTransformationOutputProperties();
+            transformer.setOutputProperties(outputProps);
+            
             return transformer;
         }
         

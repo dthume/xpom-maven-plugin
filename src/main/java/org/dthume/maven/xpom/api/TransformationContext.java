@@ -20,6 +20,7 @@
 package org.dthume.maven.xpom.api;
 
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -39,6 +40,8 @@ public interface TransformationContext {
     
     Map<String, Object> getTransformationAttributes();
 
+    Properties getTransformationOutputProperties();
+    
     ArtifactResolver getArtifactResolver();
     
     CollectionResolver getCollectionResolver();

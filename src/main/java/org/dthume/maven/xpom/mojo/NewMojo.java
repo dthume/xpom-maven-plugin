@@ -49,7 +49,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.springframework.xml.transform.StringSource;
 
 /**
- * Create a new XPOM XSL file
+ * Create a new XPOM XSL file.
  * 
  * @goal new
  * 

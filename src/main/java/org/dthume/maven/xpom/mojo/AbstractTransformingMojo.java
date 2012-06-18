@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -142,12 +143,13 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
         context.setArtifactResolver(getArtifactResolver());
         context.setCollectionResolver(getCollectionResolver());
         context.setExpressionEvaluator(getExpressionEvaluator());
-        context.setModelSource(getSource());
         context.setModelResult(getResult());
+        context.setModelSource(getSource());
         context.setSourceFileEncoding(getSourceFileEncoding());
         context.setStylesheetSource(getStylesheetSource());
         context.setTransformationAttributes(getTransformationAttributeMap());
         context.setTransformationParameters(getTransformationParameterMap());
+        context.setTransformationOutputProperties(getOutputProperties());
         
         return context;
     }
@@ -166,7 +168,7 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     
     protected final File getOutputFile() { return outputFile; }
     
-    private ArtifactResolver getArtifactResolver() {
+    protected final ArtifactResolver getArtifactResolver() {
         return new DefaultArtifactResolver(repoSystem, repoManager, repoSession,
                 projectRepos, pluginRepos, modelBuilder, getReactorProjects());
     }
@@ -177,6 +179,10 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     
     protected Map<String, Object> getTransformationAttributeMap() {
         return java.util.Collections.emptyMap();
+    }
+    
+    protected Properties getOutputProperties() {
+        return new Properties();
     }
     
     private CollectionResolver getCollectionResolver() {

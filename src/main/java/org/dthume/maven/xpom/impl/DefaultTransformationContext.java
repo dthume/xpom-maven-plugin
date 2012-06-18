@@ -21,6 +21,7 @@ package org.dthume.maven.xpom.impl;
 
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -51,6 +52,8 @@ public final class DefaultTransformationContext
 
     private Map<String, Object> transformationAttributes;
 
+    private Properties outputProperties;
+    
     private ArtifactResolver artifactResolver;
     
     private CollectionResolver collectionURIResolver;
@@ -110,6 +113,14 @@ public final class DefaultTransformationContext
 
     public void setTransformationAttributes(final Map<String, Object> attrs) {
         this.transformationAttributes = attrs;
+    }
+    
+    public void setTransformationOutputProperties(Properties props) {
+        this.outputProperties = props;
+    }
+    
+    public Properties getTransformationOutputProperties() {
+        return outputProperties;
     }
 
     public ArtifactResolver getArtifactResolver() {
