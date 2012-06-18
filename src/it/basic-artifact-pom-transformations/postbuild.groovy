@@ -1,5 +1,3 @@
-import groovy.lang.Binding;
-
-new AssertModuleResultsEqualExpected(new Binding([
+new AssertModuleResultsEqualExpected(new groovy.lang.Binding([
     "basedir": basedir
 ])).run();
