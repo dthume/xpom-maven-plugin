@@ -49,7 +49,7 @@ public class ArtifactMojo extends AbstractPOMTransformingMojo {
     }
     
     private String getCoords() {
-        final String[] parts = artifact.split(":");
+        final String[] parts = artifact.trim().split(":");
         if (3 == parts.length) {
             return String.format("%s:%s:pom:%s",
                     parts[0], parts[1], parts[2]);

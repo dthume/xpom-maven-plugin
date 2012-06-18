@@ -10,7 +10,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>project-with-classifer</artifactId>
+  <artifactId>project-with-classifier</artifactId>
   <packaging>pom</packaging>
   
   <build>

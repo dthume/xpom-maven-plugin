@@ -101,7 +101,8 @@ public class DefaultArtifactResolver implements ArtifactResolver {
     private ArtifactResult resolveArtifact(final String artifactId) {
         final Artifact artifact = new DefaultArtifact(artifactId);
         final ArtifactRequest req =
-                new ArtifactRequest(artifact, projectRepos, null);            
+                new ArtifactRequest(artifact, projectRepos, "project");
+        
         try {
             return repoSystem.resolveArtifact(repoSession, req);
         } catch (final ArtifactResolutionException e) {
