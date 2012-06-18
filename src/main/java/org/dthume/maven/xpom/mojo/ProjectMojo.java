@@ -37,6 +37,7 @@ import org.dthume.maven.xpom.api.XPOMException;
 /**
  * Transform the current project POM.
  * 
+ * @requiresProject true
  * @goal project
  * 
  * @author dth

@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 /**
  * Commit project POM transformation.
  * 
+ * @requiresProject true
  * @goal commit
  * 
  * @author dth
