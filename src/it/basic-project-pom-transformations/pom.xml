@@ -3,19 +3,18 @@
   
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.dthume.maven.xpom.it</groupId>
+  <parent>
+    <groupId>org.dthume.maven.xpom.it</groupId>
+    <artifactId>basic-transform-and-compare-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+
   <artifactId>basic-project-pom-transformations</artifactId>
-  <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Basic Project POM Transformations</name>
 
   <properties>
-    <xpom.testcase.source.dir>${project.basedir}</xpom.testcase.source.dir>
-    <xpom.testcase.results.dir>
-      ${project.build.directory}/xpom-test-results
-    </xpom.testcase.results.dir>
-    
     <test.prop.1>value1</test.prop.1>
   </properties>
 
@@ -33,15 +32,6 @@
       <plugin>
         <groupId>@project.groupId@</groupId>
         <artifactId>@project.artifactId@</artifactId>
-        <version>@project.version@</version>
-        <configuration>
-          <stylesheetFile>
-            ${xpom.testcase.source.dir}/stylesheet.xsl
-          </stylesheetFile>
-          <outputFile>
-            ${xpom.testcase.results.dir}/actual/pom.xml
-          </outputFile>
-        </configuration>
         <executions>
           <execution>
             <id>execute-test-case</id>
@@ -49,29 +39,6 @@
             <goals>
               <goal>project</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-expected-test-results</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>
-                ${xpom.testcase.results.dir}/expected
-              </outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${xpom.testcase.source.dir}/expected</directory>
-                </resource>
-              </resources>
-            </configuration>
           </execution>
         </executions>
       </plugin>

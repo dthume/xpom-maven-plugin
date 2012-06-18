@@ -9,6 +9,7 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>basic-transform-and-compare-parent</module>
     <module>project-with-classifier</module>
   </modules>
   
