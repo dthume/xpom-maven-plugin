@@ -27,21 +27,31 @@
     <module>collection-access</module>
   </modules>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>@project.groupId@</groupId>
-        <artifactId>@project.artifactId@</artifactId>
-        <executions>
-          <execution>
-            <id>execute-test-case</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>project</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>  
+  <profiles>
+    <profile>
+      <id>test-case</id>
+      <activation>
+        <file>
+          <exists>expected/pom.xml</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>@project.groupId@</groupId>
+            <artifactId>@project.artifactId@</artifactId>
+            <executions>
+              <execution>
+                <id>execute-test-case</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>project</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>  
 </project>

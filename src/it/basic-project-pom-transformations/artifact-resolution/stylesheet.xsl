@@ -32,7 +32,7 @@
       <inherited.execution.found>
         <xsl:value-of select="
           exists(
-            $effectiveParent/project/build/plugins/plugin[
+            $effectiveParent/project/descendant::build/plugins/plugin[
               artifactId = 'xpom-maven-plugin'
             ]/executions/execution[
               id = 'execute-test-case'
