@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <groupId>org.dthume.maven.xpom.it</groupId>
+  <artifactId>project-with-classifier</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <classifier-property-present>true</classifier-property-present>
+</project>

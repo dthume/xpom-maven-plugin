@@ -15,6 +15,7 @@
   <name>Basic Artifact POM Transformations</name>
 
   <modules>
+    <module>extract-classified-project-coordinates</module>
     <module>extract-project-coordinates</module>
   </modules>
   

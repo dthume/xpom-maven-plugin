@@ -35,7 +35,7 @@
             $effectiveParent/project/descendant::build/plugins/plugin[
               artifactId = 'xpom-maven-plugin'
             ]/executions/execution[
-              id = 'execute-test-case'
+                  id = 'execute-test-case'
               and phase = 'integration-test'
             ]
           )" />
