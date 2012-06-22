@@ -86,7 +86,7 @@
 
     <informalexample>
       <screen>
-$ mvn xpom:new -DoutputFile=src/xpom/my-transform.xsl -Dbase=identity</screen>
+$ mvn xpom:new -DoutputFile=my-transform.xsl -Dbase=identity</screen>
     </informalexample>
 
     <para>To produce a file similar to:</para>
@@ -131,8 +131,41 @@ $ mvn xpom:new -DoutputFile=src/xpom/my-transform.xsl -Dbase=identity</screen>
       <code xlink:href="new-mojo.html#defaultXPathNamespace"
       >defaultXPathNamespace</code> properties, which can be specified on
       the command line using <code>-DdefaultOutputNS</code> and
-      <code>-DdefaultXPathNS</code> respectively.
+      <code>-DdefaultXPathNS</code> respectively, e.g:
     </para>
+    
+    <informalexample>
+      <screen
+>$ mvn xpom:new -DoutputFile=my-transform.xsl -DdefaultOutputNS -DdefaultXPathNS
+</screen>
+    </informalexample>
+
+    <para>To produce a file similar to:</para>
+
+    <informalexample>
+      <programlisting language="xml"
+><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:pom="http://maven.apache.org/POM/4.0.0"
+                xmlns:template="urn:xpom:template"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns:xpom="urn:xpom:core"
+                
+                xmlns="http://maven.apache.org/POM/4.0.0"
+                xpath-default-namespace="http://maven.apache.org/POM/4.0.0"
+                
+                exclude-result-prefixes="#all"
+                version="2.0">
+
+    <xsl:import href="urn:xpom:core"/>
+
+    <xsl:output method="xml" indent="yes"/>
+
+    <xsl:template match="/">
+        <!-- TODO -->
+    </xsl:template>
+</xsl:stylesheet>
+]]></programlisting>
+    </informalexample>
     
     <para>
       One final point to note about the <code>new</code> goal is that it will
