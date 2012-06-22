@@ -60,20 +60,20 @@
     <informalexample>
       <programlisting language="xml"
 ><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:pom="http://maven.apache.org/POM/4.0.0"
-                xmlns:template="urn:xpom:template"
-                xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                xmlns:xpom="urn:xpom:core"
-                exclude-result-prefixes="#all"
-                version="2.0">
+  xmlns:pom="http://maven.apache.org/POM/4.0.0"
+  xmlns:template="urn:xpom:template"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xpom="urn:xpom:core"
+  exclude-result-prefixes="#all"
+  version="2.0">
 
-    <xsl:import href="urn:xpom:core"/>
+  <xsl:import href="urn:xpom:core"/>
 
-    <xsl:output method="xml" indent="yes"/>
+  <xsl:output method="xml" indent="yes"/>
 
-    <xsl:template match="/">
-        <!-- TODO -->
-    </xsl:template>
+  <xsl:template match="/">
+    <!-- TODO -->
+  </xsl:template>
 </xsl:stylesheet>]]></programlisting>
     </informalexample>
     
@@ -94,26 +94,26 @@ $ mvn xpom:new -DoutputFile=my-transform.xsl -Dbase=identity</screen>
     <informalexample>
       <programlisting language="xml"
 ><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:pom="http://maven.apache.org/POM/4.0.0"
-                xmlns:template="urn:xpom:template"
-                xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                xmlns:xpom="urn:xpom:core"
-                exclude-result-prefixes="#all"
-                version="2.0">
+  xmlns:pom="http://maven.apache.org/POM/4.0.0"
+  xmlns:template="urn:xpom:template"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xpom="urn:xpom:core"
+  exclude-result-prefixes="#all"
+  version="2.0">
 
-    <xsl:import href="urn:xpom:core"/>
+  <xsl:import href="urn:xpom:core"/>
 
-    <xsl:import href="urn:xpom:core:identity"/>
+  <xsl:import href="urn:xpom:core:identity"/>
 
-    <xsl:output method="xml" indent="yes"/>
+  <xsl:output method="xml" indent="yes"/>
 
-    <!--
-         Simple template which plays well with all the available base transforms. 
-         Modify or replace as appropriate. 
-    -->
-    <xsl:template match="/">
-        <xsl:apply-templates mode="#current" select="@* | node()"/>
-    </xsl:template>
+  <!--
+    Simple template which plays well with all the available base transforms. 
+    Modify or replace as appropriate. 
+  -->
+  <xsl:template match="/">
+    <xsl:apply-templates mode="#current" select="@* | node()"/>
+  </xsl:template>
 </xsl:stylesheet>
 ]]></programlisting>
     </informalexample>
@@ -145,24 +145,24 @@ $ mvn xpom:new -DoutputFile=my-transform.xsl -Dbase=identity</screen>
     <informalexample>
       <programlisting language="xml"
 ><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:pom="http://maven.apache.org/POM/4.0.0"
-                xmlns:template="urn:xpom:template"
-                xmlns:xs="http://www.w3.org/2001/XMLSchema"
-                xmlns:xpom="urn:xpom:core"
-                
-                xmlns="http://maven.apache.org/POM/4.0.0"
-                xpath-default-namespace="http://maven.apache.org/POM/4.0.0"
-                
-                exclude-result-prefixes="#all"
-                version="2.0">
+  xmlns:pom="http://maven.apache.org/POM/4.0.0"
+  xmlns:template="urn:xpom:template"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:xpom="urn:xpom:core"
+  
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xpath-default-namespace="http://maven.apache.org/POM/4.0.0"
+  
+  exclude-result-prefixes="#all"
+  version="2.0">
 
-    <xsl:import href="urn:xpom:core"/>
+  <xsl:import href="urn:xpom:core"/>
 
-    <xsl:output method="xml" indent="yes"/>
+  <xsl:output method="xml" indent="yes"/>
 
-    <xsl:template match="/">
-        <!-- TODO -->
-    </xsl:template>
+  <xsl:template match="/">
+    <!-- TODO -->
+  </xsl:template>
 </xsl:stylesheet>
 ]]></programlisting>
     </informalexample>
