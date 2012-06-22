@@ -25,8 +25,9 @@
   xmlns:pom="http://maven.apache.org/POM/4.0.0"
   xmlns:template="urn:xpom:template"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    
-  extension-element-prefixes="doc"  
+  
+  exclude-result-prefixes="template"
+  extension-element-prefixes="doc"
   version="2.0">
 
   <xsl:param name="baseTransformation" as="xs:string" select="''" />

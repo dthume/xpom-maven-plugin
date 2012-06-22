@@ -52,6 +52,7 @@ import org.springframework.xml.transform.StringSource;
  * Create a new XPOM XSL file.
  * 
  * @goal new
+ * @requiresProject false
  * 
  * @author dhume
  */

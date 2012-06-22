@@ -1,3 +1,4 @@
 new AssertModuleResultsEqualExpected(new groovy.lang.Binding([
-    "basedir": basedir
+    "basedir": basedir,
+    "target": "pom.xml"
 ])).run();

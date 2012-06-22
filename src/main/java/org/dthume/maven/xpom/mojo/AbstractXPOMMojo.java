@@ -19,15 +19,7 @@
  */
 package org.dthume.maven.xpom.mojo;
 
-import static org.codehaus.plexus.util.IOUtil.copy;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.configuration;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.element;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment;
-import static org.twdata.maven.mojoexecutor.MojoExecutor.plugin;
-
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
@@ -41,13 +33,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.XmlStreamReader;
-import org.codehaus.plexus.util.xml.XmlStreamWriter;
 import org.dthume.maven.xpom.api.ExpressionEvaluator;
 import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.DefaultExpressionEvaluator;
 import org.dthume.maven.xpom.impl.saxon.TraxHelper;
-import org.twdata.maven.mojoexecutor.MojoExecutor.Element;
 
 /**
  * @author dth

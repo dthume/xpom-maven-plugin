@@ -3,6 +3,7 @@ import static org.junit.Assert.assertTrue
 
 import org.custommonkey.xmlunit.XMLUnit;
 
+XMLUnit.setIgnoreComments(true);
 XMLUnit.setIgnoreWhitespace(true);
 
 new XmlSlurper().parseText(
@@ -11,12 +12,14 @@ new XmlSlurper().parseText(
     new File(basedir, moduleName.text());
 }.each { test ->
     final File testDir = new File(test, "target/xpom-test-results");
-    final File expected = new File(testDir, "expected/pom.xml");
-    final File actual = new File(testDir, "actual/pom.xml");
+    final File expected = new File(testDir, "expected/$target");
+    final File actual = new File(testDir, "actual/$target");
+    
+    def diff = XMLUnit.compareXML(expected.text, actual.text);
     
     assertTrue(
-        "Failed to validate testcase: $test",
-        XMLUnit.compareXML(expected.text, actual.text).similar()
+        "Failed to validate testcase: $test, result of XML comparison:\n$diff",
+        diff.similar()
     );
 };
 

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.dthume.maven.xpom.it</groupId>
+    <artifactId>basic-transform-and-compare-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>new-xpom-generation</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Generation of new XPOM templates</name>
+
+  <modules>
+    <module>basic</module>
+    <module>filter</module>
+    <module>identity</module>
+    <module>default-output-ns</module>
+    <module>default-xpath-ns</module>
+  </modules>
+  
+  <profiles>
+    <profile>
+      <id>test-case</id>
+      <activation>
+        <file>
+          <exists>expected/xpom.xsl</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>@project.groupId@</groupId>
+            <artifactId>@project.artifactId@</artifactId>
+            <configuration>
+              <outputFile>
+                ${xpom.testcase.results.dir}/actual/xpom.xsl
+              </outputFile>
+            </configuration>
+            <executions>
+              <execution>
+                <id>execute-test-case</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>new</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>  
+</project>

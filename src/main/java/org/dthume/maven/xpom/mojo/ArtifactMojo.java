@@ -27,6 +27,7 @@ import org.dthume.maven.xpom.api.ArtifactResolver;
  * Transform an arbitrary artifact POM.
  * 
  * @goal artifact
+ * @goal requiresProject false
  * 
  * @author dth
  */
