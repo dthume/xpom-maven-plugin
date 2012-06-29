@@ -119,7 +119,8 @@ public class XSLTransformer implements POMTransformer {
         
         private void setURIResolver(final TransformerFactory factory) {
             final List<URIResolver> resolvers = java.util.Arrays.asList(
-                    (URIResolver)new StandardLibraryURIResolver()
+                    new StandardLibraryURIResolver(),
+                    new ArtifactURIResolver(context.getArtifactResolver())
             );
             factory.setURIResolver(new ChainingURIResolver(resolvers));
         }

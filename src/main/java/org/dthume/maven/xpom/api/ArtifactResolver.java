@@ -19,10 +19,14 @@
  */
 package org.dthume.maven.xpom.api;
 
+import java.io.Reader;
+
 import javax.xml.transform.Source;
 
 public interface ArtifactResolver {
     Source resolveArtifactPOM(final String coords);
     
     Source resolveEffectivePOM(final String coords);
+    
+    Reader resolveResource(final String coords, final String resource);
 }

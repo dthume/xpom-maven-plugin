@@ -17,14 +17,11 @@
   
   <xsl:template match="/project">
     <xsl:variable name="parentCoords" select="
-      string-join(
-          (parent/groupId, parent/artifactId, 'pom', parent/version),
-          ':'
-        )" />
+      xpom:extract-artifact-URI(parent)" />
     <xsl:variable name="parentPOM" as="document-node()" select="
-      xpom:resolve-artifact-pom($parentCoords)" />
+      document($parentCoords)" />
     <xsl:variable name="effectiveParent" as="document-node()" select="
-      xpom:effective-pom($parentCoords)" />
+      document(concat($parentCoords, '?effective=true'))" />
     <from-parent>
       <test.prop.1>
         <xsl:value-of select="$parentPOM/project/properties/test.prop.1" />

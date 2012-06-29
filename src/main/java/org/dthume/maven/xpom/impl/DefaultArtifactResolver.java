@@ -19,8 +19,12 @@
  */
 package org.dthume.maven.xpom.impl;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -92,13 +96,36 @@ public class DefaultArtifactResolver implements ArtifactResolver {
     }
 
     public Source resolveArtifactPOM(final String gav) {
+        return withSynchronizedIO(new Callable<Source>() {
+            public Source call() throws Exception {
+                final ArtifactResult result = resolveArtifactInternal(gav);
+                return new StreamSource(result.getArtifact().getFile());
+            }
+        }, "Failed to resolve pom: " + gav);
+    }
+
+    public Source resolveEffectivePOM(final String coords) {
         synchronized (lock) {
-            final ArtifactResult result = resolveArtifact(gav);
-            return new StreamSource(result.getArtifact().getFile());
+            return resolveEffectivePOMInternal(coords);
         }
     }
     
-    private ArtifactResult resolveArtifact(final String artifactId) {
+    public Reader resolveResource(final String coords, final String resource) {
+        return withSynchronizedIO(new Callable<Reader>() {
+            public Reader call() throws Exception {
+                final ArtifactResult result = resolveArtifactInternal(coords);
+                return new FileReader(result.getArtifact().getFile());
+            }
+        }, "Failed to resolve artifact: " + coords);
+    }
+
+    public Source resolveDependencies(final String coords) {
+        synchronized (lock) {
+            throw new UnsupportedOperationException("TODO: implement");
+        }
+    }
+    
+    private ArtifactResult resolveArtifactInternal(final String artifactId) {
         final Artifact artifact = new DefaultArtifact(artifactId);
         final ArtifactRequest req =
                 new ArtifactRequest(artifact, projectRepos, "project");
@@ -108,23 +135,15 @@ public class DefaultArtifactResolver implements ArtifactResolver {
         } catch (final ArtifactResolutionException e) {
             throw ARE("Exception while resolving artifact: " + artifactId, e);
         }
-    }
-    
-    public synchronized Source resolveDependencies(final String coords) {
-        throw new UnsupportedOperationException("TODO: implement");
-    }
-    
-    public synchronized Source resolveEffectivePOM(final String coords) {
-        synchronized (lock) {
-            return resolveEffectivePOMInternal(coords);
-        }
-    }
+    }    
 
     private Source resolveEffectivePOMInternal(final String coords) {
+        final File pom =
+                resolveArtifactInternal(coords).getArtifact().getFile();
         final ModelBuildingRequest request = new DefaultModelBuildingRequest()
             .setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL)
             .setModelResolver(getModelResolver())
-            .setPomFile(resolveArtifact(coords).getArtifact().getFile());
+            .setPomFile(pom);
 
         final ModelBuildingResult result = buildModel(request);
 
@@ -132,6 +151,17 @@ public class DefaultArtifactResolver implements ArtifactResolver {
             return XPOMUtil.modelToSource(result.getEffectiveModel());
         } catch (final IOException e) {
             throw ARE("Failed to serialize model", e);
+        }
+    }
+    
+    private <V> V withSynchronizedIO(final Callable<V> callable,
+            final String message) {
+        try {
+            synchronized (lock) {
+                return callable.call();                
+            }
+        } catch (final Exception e) {
+            throw ARE(String.format(message, e.getMessage(), e), e);
         }
     }
     

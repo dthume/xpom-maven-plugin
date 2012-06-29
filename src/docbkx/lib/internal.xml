@@ -37,7 +37,7 @@
   
   <para>
     XPOM makes use of an internal namespace in order to implement part of the
-    "bridge" between Java and XSL. The URI of this namespace is
+    bridge between Java and XSL. The URI of this namespace is
     <code>urn:xpom:internal</code>. <emphasis>This namespace is internal only
     </emphasis>; it is subject to unannounced change between releases
     and should <emphasis>NOT</emphasis> be used directly in XPOM stylesheets.

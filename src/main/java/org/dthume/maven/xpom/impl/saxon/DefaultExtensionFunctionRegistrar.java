@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
@@ -54,7 +55,6 @@ import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.StringValue;
 
-import org.apache.maven.model.building.ModelBuilder;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.dthume.maven.xpom.api.ArtifactResolver;
@@ -76,6 +76,9 @@ public class DefaultExtensionFunctionRegistrar
     
     public void registerExtensionFunctions(final TransformationContext context,
             final Configuration config) {
+        final ExpressionEvaluator evaluator = context.getExpressionEvaluator();
+        final ArtifactResolver resolver = context.getArtifactResolver();
+
         final List<ExtensionFunctionDefinition> functions =
                 new LinkedList<ExtensionFunctionDefinition>();
         
@@ -83,11 +86,9 @@ public class DefaultExtensionFunctionRegistrar
         functions.add(new ReadPropertiesString(config));
         functions.add(new RelativizeURI());
         
-        final ExpressionEvaluator evaluator = context.getExpressionEvaluator();
         if (null != evaluator)
             functions.add(new EvaluateExpression(evaluator));
         
-        final ArtifactResolver resolver = context.getArtifactResolver();
         if (null != resolver) {
             functions.add(new ResolveArtifactPOM(resolver, config));
             functions.add(new EffectivePOM(resolver, config));
@@ -109,6 +110,13 @@ public class DefaultExtensionFunctionRegistrar
         private final String name;
         private final SequenceType[] argumentTypes;
         private final SequenceType resultType;
+
+        protected SimpleFunctionDef(
+                final SequenceType resultType,
+                final String name,
+                final SequenceType...argumentTypes) {
+            this(FN_PREFIX, FN_NS, name, resultType, argumentTypes);
+        }
         
         protected SimpleFunctionDef(
                 final String prefix, final String uri, final String name,
@@ -144,8 +152,7 @@ public class DefaultExtensionFunctionRegistrar
         private final ExpressionEvaluator evaluator;
         
         EvaluateExpression(final ExpressionEvaluator evaluator) {
-            super(FN_PREFIX, FN_NS, "evaluate",
-                    SINGLE_STRING, SINGLE_STRING);
+            super(SINGLE_STRING, "evaluate", SINGLE_STRING);
             this.evaluator = evaluator;
         }
         
@@ -177,8 +184,7 @@ public class DefaultExtensionFunctionRegistrar
 
     private class FilePathToURI extends SimpleFunctionDef {
         FilePathToURI() {
-            super(FN_PREFIX, FN_NS, "filepath-to-uri",
-                    SINGLE_URI, SINGLE_STRING);
+            super(SINGLE_URI, "filepath-to-uri", SINGLE_STRING);
         }
         
         public ExtensionFunctionCall makeCallExpression() {
@@ -199,8 +205,7 @@ public class DefaultExtensionFunctionRegistrar
 
     private class RelativizeURI extends SimpleFunctionDef {
         RelativizeURI() {
-            super(FN_PREFIX, FN_NS, "relativize-uri",
-                    SINGLE_URI, SINGLE_STRING, SINGLE_STRING);
+            super(SINGLE_URI, "relativize-uri", SINGLE_STRING, SINGLE_STRING);
         }
         
         public ExtensionFunctionCall makeCallExpression() {
@@ -235,8 +240,8 @@ public class DefaultExtensionFunctionRegistrar
         private final Configuration configuration;
         
         ReadPropertiesString(Configuration configuration) {
-            super(FN_PREFIX, FN_NS, "read-properties-string",
-                    OPTIONAL_DOCUMENT_NODE, SINGLE_STRING);
+            super(OPTIONAL_DOCUMENT_NODE, "read-properties-string",
+                    SINGLE_STRING);
             this.configuration = configuration;
         }
         
@@ -276,15 +281,18 @@ public class DefaultExtensionFunctionRegistrar
             };
         }
     }
-    
-    private class ResolveArtifactPOM extends SimpleFunctionDef {
+
+    private abstract class AbstractArtifactResolvingFunction
+        extends SimpleFunctionDef {
+        
         private final ArtifactResolver resolver;
         private final Configuration configuration;
         
-        ResolveArtifactPOM(final ArtifactResolver resolver,
+        AbstractArtifactResolvingFunction(
+                final String localName,
+                final ArtifactResolver resolver,
                 final Configuration configuration) {
-            super(FN_PREFIX, FN_NS, "resolve-artifact-pom",
-                    OPTIONAL_DOCUMENT_NODE, SINGLE_STRING);
+            super(OPTIONAL_DOCUMENT_NODE, localName, SINGLE_STRING);
             this.configuration = configuration;
             this.resolver = resolver;
         }
@@ -299,7 +307,7 @@ public class DefaultExtensionFunctionRegistrar
                     
                     Node node;
                     try {
-                        node = trax.toNode(resolver.resolveArtifactPOM(coords));
+                        node = trax.toNode(resolveArtifact(coords));
                     } catch (final TransformerException e) {
                         throw new XPathException(e);
                     }
@@ -310,42 +318,34 @@ public class DefaultExtensionFunctionRegistrar
                     return SingletonIterator.makeIterator(item);
                 }
             };
+        }
+        
+        protected ArtifactResolver getResolver() { return resolver; }
+        
+        protected abstract Source resolveArtifact(final String coords);
+    }
+    
+    private class ResolveArtifactPOM extends AbstractArtifactResolvingFunction {
+        ResolveArtifactPOM(final ArtifactResolver resolver,
+                final Configuration configuration) {
+            super("resolve-artifact-pom", resolver, configuration);
+        }
+        
+        @Override
+        protected Source resolveArtifact(final String coords) {
+            return getResolver().resolveArtifactPOM(coords);
         }
     }
 
-    private class EffectivePOM extends SimpleFunctionDef {
-        private final ArtifactResolver resolver;
-        private final Configuration configuration;
-        
+    private class EffectivePOM extends AbstractArtifactResolvingFunction {
         EffectivePOM(final ArtifactResolver resolver,
                 final Configuration configuration) {
-            super(FN_PREFIX, FN_NS, "effective-pom",
-                    OPTIONAL_DOCUMENT_NODE, SINGLE_STRING);
-            this.configuration = configuration;
-            this.resolver = resolver;
+            super("effective-pom", resolver, configuration);
         }
-        
-        public ExtensionFunctionCall makeCallExpression() {
-            return new ExtensionFunctionCall() {
-                @Override
-                public SequenceIterator<? extends Item> call(
-                        final SequenceIterator<? extends Item>[] args,
-                        final XPathContext xpathContext) throws XPathException {
-                    final String coords = args[0].next().getStringValue();
-                    
-                    Node node;
-                    try {
-                        node = trax.toNode(resolver.resolveEffectivePOM(coords));
-                    } catch (final TransformerException e) {
-                        throw new XPathException(e);
-                    }
-                    
-                    final NodeInfo item =
-                            new DocumentWrapper(node, null, configuration);
-                    
-                    return SingletonIterator.makeIterator(item);
-                }
-            };
+
+        @Override
+        protected Source resolveArtifact(String coords) {
+            return getResolver().resolveEffectivePOM(coords);
         }
     }
 }

@@ -24,8 +24,13 @@ import java.io.StringWriter;
 
 import javax.xml.transform.Source;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.dthume.maven.xpom.api.ExpressionEvaluator;
 import org.springframework.xml.transform.StringSource;
 
 public class XPOMUtil {
@@ -33,5 +38,13 @@ public class XPOMUtil {
         final StringWriter writer = new StringWriter();
         new MavenXpp3Writer().write(writer, model);
         return new StringSource(writer.toString());
+    }
+    
+    public static ExpressionEvaluator expressionEvaluatorForSession(
+            final MavenSession session) {
+        final MojoExecution execution = new MojoExecution(new MojoDescriptor());
+        final PluginParameterExpressionEvaluator evaluator =
+                new PluginParameterExpressionEvaluator(session, execution);
+        return new DefaultExpressionEvaluator(evaluator);
     }
 }
