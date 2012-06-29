@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class XPomUri {
+public final class XPomUri {
     private final static Pattern ARTIFACT_PATTERN = Pattern.compile(
             "^/([^/]+)/([^/]+)/([^/]+)/([^/]+)(?:/(.*))?$");
 
@@ -22,14 +22,30 @@ public class XPomUri {
     private final String resource;
     private final Map<String, String> params;
 
-    private XPomUri(final String coords, final String resource,
-            final Map<String, String> params) {
-        this.coords = coords;
-        this.resource = resource;
-        this.params =
-                unmodifiableMap(new LinkedHashMap<String, String>(params));
-    }
+    public XPomUri(final String uriString) throws URISyntaxException {
+        if (null == uriString)
+            throw new URISyntaxException(uriString, "Cannot parse null URI");
 
+        final URI jUri = new URI(uriString);
+
+        if (!"xpom".equals(jUri.getScheme())) {
+            throw new URISyntaxException(uriString,
+                    "Not in xpom://<coords>[/<path>] format");
+        }
+
+        final Matcher matcher = ARTIFACT_PATTERN.matcher(jUri.getPath());
+        if (!matcher.matches()) {
+            throw new URISyntaxException(uriString,
+                    "XPOM scheme but not in xpom://<coords>[/<path>] format");
+        }
+
+        final String groupId = jUri.getAuthority();
+
+        coords = toCoords(matcher, groupId);
+        resource = toResource(matcher);
+        params = unmodifiableMap(toParams(jUri.getQuery()));
+    }
+    
     public String getCoords() { return coords; }
 
     public String getResource() { return resource; }
@@ -38,36 +54,9 @@ public class XPomUri {
 
     public Map<String, String> getParams() { return params; }
 
-    public static XPomUri parseURI(final String uri) throws URISyntaxException {
-        if (null == uri)
-            throw new URISyntaxException(uri, "Cannot parse null URI");
-
-        final URI jUri = new URI(uri);
-
-        if (!"xpom".equals(jUri.getScheme())) {
-            throw new URISyntaxException(uri,
-                    "Not in xpom://<coords>[/<path>] format");
-        }
-
-        final String groupId = jUri.getAuthority();
-
-        final Matcher matcher = ARTIFACT_PATTERN.matcher(jUri.getPath());
-
-        if (!matcher.matches()) {
-            throw new URISyntaxException(uri,
-                    "XPOM scheme but not in xpom://<coords>[/<path>] format");
-        }
-
-        final String coords = toCoords(matcher, groupId);
-        final String resource = toResource(matcher);
-        final Map<String, String> params = toParams(jUri.getQuery());
-        
-        return new XPomUri(coords, resource, params);
-    }
-
     public static XPomUri parseURIOrNull(final String uri) {
         try {
-            return XPomUri.parseURI(uri);
+            return new XPomUri(uri);
         } catch (final URISyntaxException e) {
             return null;
         }
