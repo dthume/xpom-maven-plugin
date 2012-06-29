@@ -81,7 +81,7 @@
   </doc:doc>
   <xsl:function name="xpom:resolve-artifact-pom" as="document-node()?">
     <xsl:param name="coordinates" as="xs:string" />
-    <xsl:sequence select="internal:resolve-artifact-pom($coordinates)" />
+    <xsl:sequence select="document($coordinates)" />
   </xsl:function>
 
   <doc:doc>
@@ -92,7 +92,7 @@
   </doc:doc>
   <xsl:function name="xpom:effective-pom" as="document-node()?">
     <xsl:param name="coordinates" as="xs:string" />
-    <xsl:sequence select="internal:effective-pom($coordinates)" />
+    <xsl:sequence select="document(concat($coordinates, '?effective=true'))" />
   </xsl:function>
 
   <!--====================== Coordinate Extraction =======================-->

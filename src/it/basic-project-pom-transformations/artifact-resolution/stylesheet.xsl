@@ -21,7 +21,7 @@
     <xsl:variable name="parentPOM" as="document-node()" select="
       document($parentCoords)" />
     <xsl:variable name="effectiveParent" as="document-node()" select="
-      document(concat($parentCoords, '?effective=true'))" />
+      xpom:effective-pom($parentCoords)" />
     <from-parent>
       <test.prop.1>
         <xsl:value-of select="$parentPOM/project/properties/test.prop.1" />
