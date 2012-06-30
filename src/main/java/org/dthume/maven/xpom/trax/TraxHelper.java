@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package org.dthume.maven.xpom.impl.saxon;
+package org.dthume.maven.xpom.trax;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;

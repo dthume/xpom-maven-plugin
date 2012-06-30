@@ -46,6 +46,8 @@ import org.dthume.maven.xpom.api.POMTransformer;
 import org.dthume.maven.xpom.api.TransformationContext;
 import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.saxon.stdlib.StandardLibraryURIResolver;
+import org.dthume.maven.xpom.trax.ChainingURIResolver;
+import org.dthume.maven.xpom.trax.TraxHelper;
 
 @Component(role=POMTransformer.class, hint="xsl")
 public class XSLTransformer implements POMTransformer {
@@ -56,7 +58,7 @@ public class XSLTransformer implements POMTransformer {
     @Requirement(role=ExtensionFunctionRegistrar.class, optional=true)
     private List<ExtensionFunctionRegistrar> extensionFunctions =
         java.util.Collections.emptyList();
-
+    
     public void transform(final TransformationContext context) {
         try {
             new Handler(context).handle();
@@ -120,7 +122,8 @@ public class XSLTransformer implements POMTransformer {
         private void setURIResolver(final TransformerFactory factory) {
             final List<URIResolver> resolvers = java.util.Arrays.asList(
                     new StandardLibraryURIResolver(),
-                    new ArtifactURIResolver(context.getArtifactResolver())
+                    new ArtifactURIResolver(context.getArtifactResolver()),
+                    context.getUriResolver()
             );
             factory.setURIResolver(new ChainingURIResolver(resolvers));
         }

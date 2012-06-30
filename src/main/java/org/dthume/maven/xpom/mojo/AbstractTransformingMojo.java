@@ -21,6 +21,8 @@ package org.dthume.maven.xpom.mojo;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import java.util.Properties;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -36,6 +39,7 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.io.SettingsWriter;
 import org.dthume.maven.util.LogWriter;
 import org.dthume.maven.xpom.api.ArtifactResolver;
 import org.dthume.maven.xpom.api.CollectionResolver;
@@ -45,6 +49,9 @@ import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.DefaultArtifactResolver;
 import org.dthume.maven.xpom.impl.DefaultTransformationContext;
 import org.dthume.maven.xpom.impl.XPOMUtil;
+import org.dthume.maven.xpom.impl.saxon.SettingsURIResolver;
+import org.dthume.maven.xpom.trax.ChainingURIResolver;
+import org.dthume.maven.xpom.trax.ClasspathURIResolver;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
@@ -52,12 +59,18 @@ import org.sonatype.aether.repository.RemoteRepository;
 
 public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     /**
-     * The XSL stylesheet to apply.
+     * The XSL stylesheet file to apply.
      *
-     * @required
      * @parameter expression="${xsl}"
      */
-    private File stylesheetFile;
+    private File stylesheetFile = null;
+    
+    /**
+     * The URI of an XSL stylesheet to apply.
+     * 
+     * @parameter expression="${xslUri}"
+     */
+    private URI stylesheetURI = null;
     
     /**
      * If {@code true} then only output transformation result to console, do
@@ -122,18 +135,45 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
      */
     private POMTransformer transformer;
     
-    protected Source getStylesheetSource() {
-        return new StreamSource(stylesheetFile);
+    /**
+     * @component
+     */
+    private SettingsWriter settingsWriter;
+    
+    private URIResolver uriResolver = null;
+    
+    protected final Source getStylesheetSource() {
+        return null != stylesheetFile ?
+                new StreamSource(stylesheetFile) : getStylesheetSourceFromURI();
+    }
+    
+    private Source getStylesheetSourceFromURI()
+    {
+        try {
+            return getURIResolver().resolve(stylesheetURI.toString(),
+                    getBaseDir().toURI().toString());
+        } catch (final TransformerException e) {
+            throw new XPOMException(e);
+        }
     }
 
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
-        prepareForTransformation();
+        prepareForTransformationInternal();
         
         final TransformationContext context = prepareContext();
         
         transformer.transform(context);
+    }
+    
+    private void prepareForTransformationInternal()
+            throws MojoExecutionException, MojoFailureException {
+        uriResolver = new ChainingURIResolver(java.util.Arrays.asList(
+                new SettingsURIResolver(getSettings(), settingsWriter),
+                new ClasspathURIResolver(getClass())));
+        
+        prepareForTransformation();
     }
     
     protected void prepareForTransformation()
@@ -145,6 +185,7 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
         
         context.setArtifactResolver(getArtifactResolver());
         context.setCollectionResolver(getCollectionResolver());
+        context.setUriResolver(getURIResolver());
         context.setExpressionEvaluator(getExpressionEvaluator());
         context.setModelResult(getResult());
         context.setModelSource(getSource());
@@ -197,6 +238,8 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     private CollectionResolver getCollectionResolver() {
         return new BuiltinCollectionResolver();
     }
+    
+    private URIResolver getURIResolver() { return uriResolver; }
     
     private final class BuiltinCollectionResolver
         implements CollectionResolver {

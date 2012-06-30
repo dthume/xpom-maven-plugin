@@ -59,6 +59,7 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.dthume.maven.xpom.api.ExpressionEvaluator;
 import org.dthume.maven.xpom.api.TransformationContext;
 import org.dthume.maven.xpom.impl.XPOMConstants;
+import org.dthume.maven.xpom.trax.TraxHelper;
 import org.w3c.dom.Node;
 
 @SuppressWarnings({"serial", "rawtypes"})

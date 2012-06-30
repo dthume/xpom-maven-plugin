@@ -33,17 +33,18 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.dthume.maven.xpom.api.ExpressionEvaluator;
 import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.DefaultExpressionEvaluator;
-import org.dthume.maven.xpom.impl.saxon.TraxHelper;
+import org.dthume.maven.xpom.trax.TraxHelper;
 
 /**
  * @author dth
  */
 public abstract class AbstractXPOMMojo extends AbstractMojo {
     /**
-     * Base directory of the project.
+     * Base directory of the maven execution.
      *
      * @required
      * @readonly
@@ -99,6 +100,13 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
      */
     private TraxHelper trax;
     
+    /**
+     * @readonly
+     * @required
+     * @parameter expression="${settings}"
+     */
+    private Settings settings;
+    
     protected final File getBaseDir() { return basedir; }
     
     protected final boolean isRunningInExecutionRoot() {
@@ -113,6 +121,8 @@ public abstract class AbstractXPOMMojo extends AbstractMojo {
     protected final MavenProject getProject() { return project; }
     
     protected final MavenSession getSession() { return session; }
+    
+    protected final Settings getSettings() { return settings; }
     
     protected final BuildPluginManager getPluginManager() {
         return pluginManager;

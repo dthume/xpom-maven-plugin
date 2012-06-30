@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.URIResolver;
 
 public interface TransformationContext {
     String getSourceFileEncoding();
@@ -45,4 +46,6 @@ public interface TransformationContext {
     ArtifactResolver getArtifactResolver();
     
     CollectionResolver getCollectionResolver();
+    
+    URIResolver getUriResolver();
 }

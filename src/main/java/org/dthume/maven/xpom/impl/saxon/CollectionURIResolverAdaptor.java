@@ -35,6 +35,7 @@ import net.sf.saxon.om.SequenceIterator;
 import net.sf.saxon.trans.XPathException;
 
 import org.dthume.maven.xpom.api.CollectionResolver;
+import org.dthume.maven.xpom.trax.TraxHelper;
 import org.w3c.dom.Node;
 
 public class CollectionURIResolverAdaptor implements CollectionURIResolver {

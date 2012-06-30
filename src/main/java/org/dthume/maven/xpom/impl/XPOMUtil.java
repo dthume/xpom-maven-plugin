@@ -21,9 +21,13 @@ package org.dthume.maven.xpom.impl;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -46,5 +50,15 @@ public class XPOMUtil {
         final PluginParameterExpressionEvaluator evaluator =
                 new PluginParameterExpressionEvaluator(session, execution);
         return new DefaultExpressionEvaluator(evaluator);
+    }
+    
+    public static String resolveURI(final String href, final String base)
+            throws TransformerException {
+        try {
+            return StringUtils.isBlank(base) ? href
+                    : new URI(base).resolve(href).toString();
+        } catch (final URISyntaxException e) {
+            return href;
+        }
     }
 }

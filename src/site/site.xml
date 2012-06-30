@@ -28,7 +28,12 @@
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
       <item name="Goals" href="plugin-info.html" />
-      <item name="Usage" href="usage.html"/>
+    </menu>
+    <menu name="Examples">
+      <item name="Generating new XPOM XSLs"
+        href="examples/generating-new-xpoms.html"/>
+      <item name="Transforming Project POMs"
+        href="examples/project-transformations.html"/>
     </menu>
     <menu name="Standard Library">
       <item name="Available Documents" href="lib/available-documents.html"/>

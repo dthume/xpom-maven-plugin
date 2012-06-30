@@ -11,6 +11,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.dthume.maven.xpom.api.ArtifactResolver;
+import org.dthume.maven.xpom.impl.XPOMUtil;
 
 public class ArtifactURIResolver implements URIResolver {
 
@@ -24,7 +25,7 @@ public class ArtifactURIResolver implements URIResolver {
             throws TransformerException {
         if (null == resolver) return null;
         
-        final String resolved = resolveURI(href, base);
+        final String resolved = XPOMUtil.resolveURI(href, base);
         final XPomUri uri = XPomUri.parseURIOrNull(resolved);
         
         if (null == uri) return null;
@@ -40,15 +41,5 @@ public class ArtifactURIResolver implements URIResolver {
             source = resolver.resolveArtifactPOM(uri.getCoords());
         }
         return source;
-    }
-
-    private String resolveURI(final String href, final String base)
-            throws TransformerException {
-        try {
-            return StringUtils.isBlank(base) ? href
-                    : new URI(base).resolve(href).toString();
-        } catch (final URISyntaxException e) {
-            return href;
-        }
     }
 }

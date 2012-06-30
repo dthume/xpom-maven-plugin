@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.URIResolver;
 
 import org.dthume.maven.xpom.api.ArtifactResolver;
 import org.dthume.maven.xpom.api.CollectionResolver;
@@ -58,6 +59,8 @@ public final class DefaultTransformationContext
     
     private CollectionResolver collectionURIResolver;
     
+    private URIResolver uriResolver;
+    
     public CollectionResolver getCollectionResolver() {
         return collectionURIResolver;
     }
@@ -65,6 +68,12 @@ public final class DefaultTransformationContext
     public void setCollectionResolver(
             final CollectionResolver collectionResolver) {
         this.collectionURIResolver = collectionResolver;
+    }
+
+    public URIResolver getUriResolver() { return uriResolver; }
+
+    public void setUriResolver(final URIResolver uriResolver) {
+        this.uriResolver = uriResolver;
     }
 
     public String getSourceFileEncoding() { return sourceEncoding; }

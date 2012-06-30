@@ -13,6 +13,5 @@ The plugin is capable of processing both "raw" POM files, as well as serialised
 versions of the model itself (allowing for transformation of the "effective"
 POM). 
 
-Maven generated project sites are available for the latest
-http://dthume.github.com/xpom-maven-plugin/[release] and
-http://dthu.me/projects/xpom-maven-plugin/[snapshot] versions.
+A maven generated project site is available for the latest
+http://dthu.me/projects/xpom-maven-plugin/[snapshot] version.

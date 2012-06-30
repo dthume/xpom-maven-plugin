@@ -28,6 +28,8 @@ public final class XPOMConstants {
     
     public final static String INTERNAL_NS = BASE_NS + ":internal";
     
+    public final static String SETTINGS_URI = BASE_NS + ":maven:settings";
+    
     public static String xpomName(final String name) {
         return new StringBuilder("{")
             .append(CORE_NS)
