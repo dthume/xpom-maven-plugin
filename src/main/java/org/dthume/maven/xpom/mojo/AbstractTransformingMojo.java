@@ -19,10 +19,11 @@
  */
 package org.dthume.maven.xpom.mojo;
 
+import static org.dthume.maven.xpom.trax.ChainingURIResolver.chainResolvers;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,6 @@ import org.dthume.maven.xpom.impl.DefaultArtifactResolver;
 import org.dthume.maven.xpom.impl.DefaultTransformationContext;
 import org.dthume.maven.xpom.impl.XPOMUtil;
 import org.dthume.maven.xpom.impl.saxon.SettingsURIResolver;
-import org.dthume.maven.xpom.trax.ChainingURIResolver;
 import org.dthume.maven.xpom.trax.ClasspathURIResolver;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -150,8 +150,10 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     private Source getStylesheetSourceFromURI()
     {
         try {
-            return getURIResolver().resolve(stylesheetURI.toString(),
-                    getBaseDir().toURI().toString());
+            final String href = stylesheetURI.toString();
+            final String base = getBaseDir().toURI().toString(); 
+            final String uri = XPOMUtil.resolveURI(href, base);
+            return new StreamSource(uri);
         } catch (final TransformerException e) {
             throw new XPOMException(e);
         }
@@ -161,17 +163,15 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
         prepareForTransformationInternal();
-        
         final TransformationContext context = prepareContext();
-        
         transformer.transform(context);
     }
     
     private void prepareForTransformationInternal()
             throws MojoExecutionException, MojoFailureException {
-        uriResolver = new ChainingURIResolver(java.util.Arrays.asList(
+        uriResolver = chainResolvers(
                 new SettingsURIResolver(getSettings(), settingsWriter),
-                new ClasspathURIResolver(getClass())));
+                new ClasspathURIResolver(getClass()));
         
         prepareForTransformation();
     }

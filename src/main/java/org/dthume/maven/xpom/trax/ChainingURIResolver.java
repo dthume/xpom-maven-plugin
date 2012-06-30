@@ -24,7 +24,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 
 public class ChainingURIResolver implements URIResolver {
-
     private final Iterable<URIResolver> resolvers;
 
     public ChainingURIResolver(final Iterable<URIResolver> resolvers) {
@@ -48,5 +47,9 @@ public class ChainingURIResolver implements URIResolver {
         } catch (Exception e) {
             return null; // as per api spec
         }
+    }
+    
+    public static URIResolver chainResolvers(final URIResolver...resolvers) {
+        return new ChainingURIResolver(java.util.Arrays.asList(resolvers));
     }
 }
