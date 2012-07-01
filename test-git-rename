@@ -1,0 +1,17 @@
+xpom-maven-plugin
+=================
+David Thomas Hume
+:Author Initials: DTH
+
+POM Transformation plugin; provides facilities for transforming POMs using XSL.
+Compared to the http://mojo.codehaus.org/xml-maven-plugin/[xml-maven-plugin]
+this plugin offers a deeper integration with the domain of POM transformation
+via a standard library of extension functions and stylesheets designed for
+processing POMs.
+
+The plugin is capable of processing both "raw" POM files, as well as serialised
+versions of the model itself (allowing for transformation of the "effective"
+POM). 
+
+A maven generated project site is available for the latest
+http://dthu.me/projects/xpom-maven-plugin/[snapshot] version.
