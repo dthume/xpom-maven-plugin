@@ -120,9 +120,11 @@ public class DefaultArtifactResolver implements ArtifactResolver {
     }
 
     public Source resolveDependencies(final String coords) {
-        synchronized (lock) {
-            throw new UnsupportedOperationException("TODO: implement");
-        }
+        return withSynchronizedIO(new Callable<Source>() {
+            public Source call() throws Exception {
+                throw new UnsupportedOperationException("TODO");
+            }
+        }, "Failed to resolve dependencies: " + coords);
     }
     
     private ArtifactResult resolveArtifactInternal(final String artifactId) {
