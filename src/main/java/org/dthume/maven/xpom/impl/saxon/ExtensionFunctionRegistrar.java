@@ -19,11 +19,11 @@
  */
 package org.dthume.maven.xpom.impl.saxon;
 
-import org.dthume.maven.xpom.api.TransformationContext;
-
 import net.sf.saxon.Configuration;
 
+import org.dthume.maven.xpom.api.TransformationPipeline;
+
 public interface ExtensionFunctionRegistrar {
-    void registerExtensionFunctions(TransformationContext context,
+    void registerExtensionFunctions(TransformationPipeline pipeline,
             Configuration configuration);
 }

@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.dthume</groupId>
     <artifactId>dthume-public</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <groupId>org.dthume.maven</groupId>
@@ -43,6 +43,7 @@
   </distributionManagement>
   
   <properties>
+    <prop1>&lt;test&gt;</prop1>
     <org.apache.maven.version>3.0.3</org.apache.maven.version>
     <org.sonatype.aether.version>1.8</org.sonatype.aether.version>
     <org.springframework.ws.spring-xml.version>2.0.5.RELEASE</org.springframework.ws.spring-xml.version>
@@ -95,6 +96,11 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>${org.apache.maven.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dthume</groupId>
+      <artifactId>jaxp-utils</artifactId>
+      <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.dthume.maven</groupId>

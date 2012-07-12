@@ -30,7 +30,7 @@ import org.w3c.dom.Node;
 
 @Component(role=TraxHelper.class)
 public class DefaultTraxHelper implements TraxHelper {
-    private TransformerFactory newFactory() {
+    public TransformerFactory newFactory() {
         return new net.sf.saxon.TransformerFactoryImpl();
     }
     

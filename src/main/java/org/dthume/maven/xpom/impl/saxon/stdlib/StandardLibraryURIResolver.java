@@ -31,7 +31,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.dthume.maven.xpom.impl.XPOMConstants;
 
 public class StandardLibraryURIResolver implements URIResolver {
-
     private final static String CORE_URN = XPOMConstants.CORE_NS;
     
     private final static String BASE_URN = CORE_URN + ":";

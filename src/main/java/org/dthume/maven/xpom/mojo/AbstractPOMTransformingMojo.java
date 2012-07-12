@@ -21,16 +21,37 @@ package org.dthume.maven.xpom.mojo;
 
 import static java.util.Collections.emptyList;
 
+import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 
 /**
  * @author dth
  */
 public abstract class AbstractPOMTransformingMojo
     extends AbstractTransformingMojo {
+    /**
+     * The XSL stylesheet file to apply after transformation to perform
+     * formatting / tidying.
+     *
+     * @parameter expression="${tidyXsl}"
+     */
+    private File tidyFile = null;
+    
+    /**
+     * The URI of an XSL stylesheet to apply after transformation to perform
+     * formatting / tidying.
+     * 
+     * @parameter expression="${tidyUri}"
+     */
+    private URI tidyURI = null;
+    
     /**
      * Whether or not to use the original, or effective (after inheritance
      * and interpolation) project model as the input to the transformation.
@@ -122,7 +143,13 @@ public abstract class AbstractPOMTransformingMojo
         
         return props;
     }
-    
+
+    @Override
+    protected Source getTidySource() {
+        final Source source = getSourceFromFileOrURI(tidyFile, tidyURI);
+        return null != source ? source : super.getTidySource();
+    }
+
     private Map<String, Object> propertiesToMap(final String type,
             final Properties props,
             final Map<String, Object> baseMap,

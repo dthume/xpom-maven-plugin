@@ -19,79 +19,23 @@
  */
 package org.dthume.maven.xpom.impl;
 
-import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.xml.transform.Result;
 import javax.xml.transform.Source;
-import javax.xml.transform.URIResolver;
 
-import org.dthume.maven.xpom.api.ArtifactResolver;
-import org.dthume.maven.xpom.api.CollectionResolver;
-import org.dthume.maven.xpom.api.ExpressionEvaluator;
 import org.dthume.maven.xpom.api.TransformationContext;
 
 public final class DefaultTransformationContext
     implements TransformationContext {
-
-    /**
-     * The charset to use when reading and writing source files; defaults
-     * to platform encoding.
-     */
-    private String sourceEncoding = Charset.defaultCharset().name();
-
     private Source stylesheetSource;
 
-    private Source modelSource;
+    private Map<String, Object> transformationParameters =
+            java.util.Collections.emptyMap();
 
-    private Result modelResult;
-
-    private ExpressionEvaluator expressionEvaluator;
-
-    private Map<String, Object> transformationParameters;
-
-    private Map<String, Object> transformationAttributes;
-
-    private Properties outputProperties;
+    public DefaultTransformationContext() { }
     
-    private ArtifactResolver artifactResolver;
-    
-    private CollectionResolver collectionURIResolver;
-    
-    private URIResolver uriResolver;
-    
-    public CollectionResolver getCollectionResolver() {
-        return collectionURIResolver;
-    }
-
-    public void setCollectionResolver(
-            final CollectionResolver collectionResolver) {
-        this.collectionURIResolver = collectionResolver;
-    }
-
-    public URIResolver getUriResolver() { return uriResolver; }
-
-    public void setUriResolver(final URIResolver uriResolver) {
-        this.uriResolver = uriResolver;
-    }
-
-    public String getSourceFileEncoding() { return sourceEncoding; }
-
-    public void setSourceFileEncoding(final String encoding) {
-        sourceEncoding = encoding;
-    }
-
-    public Source getModelSource() { return modelSource; }
-
-    public void setModelSource(final Source source) {
-        modelSource = source;
-    }
-
-    public Result getModelResult() { return modelResult; }
-
-    public void setModelResult(final Result result) {
-        modelResult = result;
+    public DefaultTransformationContext(final Source stylesheetSource) {
+        setStylesheetSource(stylesheetSource);
     }
 
     public Source getStylesheetSource() { return stylesheetSource; }
@@ -100,43 +44,11 @@ public final class DefaultTransformationContext
         stylesheetSource = source;
     }
 
-    public ExpressionEvaluator getExpressionEvaluator() {
-        return expressionEvaluator;
-    }
-
-    public void setExpressionEvaluator(final ExpressionEvaluator eval) {
-        this.expressionEvaluator = eval;
-    }
-
     public Map<String, Object> getTransformationParameters() {
         return transformationParameters;
     }
 
     public void setTransformationParameters(final Map<String, Object> params) {
         this.transformationParameters = params;
-    }
-
-    public Map<String, Object> getTransformationAttributes() {
-        return transformationAttributes;
-    }
-
-    public void setTransformationAttributes(final Map<String, Object> attrs) {
-        this.transformationAttributes = attrs;
-    }
-    
-    public void setTransformationOutputProperties(Properties props) {
-        this.outputProperties = props;
-    }
-    
-    public Properties getTransformationOutputProperties() {
-        return outputProperties;
-    }
-
-    public ArtifactResolver getArtifactResolver() {
-        return artifactResolver;
-    }
-    
-    public void setArtifactResolver(final ArtifactResolver resolver) {
-        this.artifactResolver = resolver;
     }
 }

@@ -21,9 +21,12 @@ package org.dthume.maven.xpom.trax;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 
 import org.w3c.dom.Node;
 
 public interface TraxHelper {
+    TransformerFactory newFactory();
+    
     Node toNode(Source source) throws TransformerException;
 }

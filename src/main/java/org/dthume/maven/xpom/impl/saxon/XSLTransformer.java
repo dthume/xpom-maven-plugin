@@ -22,35 +22,37 @@ package org.dthume.maven.xpom.impl.saxon;
 import static net.sf.saxon.lib.FeatureKeys.COLLECTION_URI_RESOLVER;
 import static net.sf.saxon.lib.FeatureKeys.OUTPUT_URI_RESOLVER;
 import static org.dthume.maven.xpom.impl.XPOMConstants.xpomName;
-import static org.dthume.maven.xpom.trax.ChainingURIResolver.chainResolvers;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 
 import net.sf.saxon.Configuration;
+import net.sf.saxon.Controller;
 import net.sf.saxon.TransformerFactoryImpl;
+import net.sf.saxon.event.TransformerReceiver;
 import net.sf.saxon.lib.StandardOutputResolver;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.dthume.jaxp.ChainingURIResolver;
 import org.dthume.maven.xpom.api.CollectionResolver;
 import org.dthume.maven.xpom.api.ExpressionEvaluator;
 import org.dthume.maven.xpom.api.POMTransformer;
 import org.dthume.maven.xpom.api.TransformationContext;
+import org.dthume.maven.xpom.api.TransformationPipeline;
 import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.saxon.stdlib.StandardLibraryURIResolver;
 import org.dthume.maven.xpom.trax.TraxHelper;
 
 @Component(role=POMTransformer.class, hint="xsl")
 public class XSLTransformer implements POMTransformer {
-
     @Requirement
     private TraxHelper trax;
     
@@ -58,43 +60,57 @@ public class XSLTransformer implements POMTransformer {
     private List<ExtensionFunctionRegistrar> extensionFunctions =
         java.util.Collections.emptyList();
     
-    public void transform(final TransformationContext context) {
+    public void transform(final TransformationPipeline pipeline) {
         try {
-            new Handler(context).handle();
+            new Handler(pipeline).handle();
         } catch (final TransformerException e) {
             throw new XPOMException(e);
         }
     }
 
     private final class Handler {
-        private final TransformationContext context; 
+        private final TransformationPipeline pipeline;
+        private TransformerFactoryImpl factory = new TransformerFactoryImpl();
 
-        Handler(final TransformationContext context) {
-            this.context = context;
+        Handler(final TransformationPipeline pipeline)
+                throws TransformerException {
+            this.pipeline = pipeline;
+            initializeFactory();
         }
 
         void handle() throws TransformerException {
-            final Source inputModel = context.getModelSource();
-            final Transformer transformer = getConfiguredTransformer();
-            transformer.transform(inputModel, context.getModelResult());
-        }
-
-        private Transformer getConfiguredTransformer()
-                throws TransformerException {
-            final Source stylesheet = context.getStylesheetSource();
-            final TransformerFactory factory = getConfiguredFactory();
-            final Transformer transformer = factory.newTransformer(stylesheet);
-            setTransformationParams(transformer);
-            
-            final Properties outputProps =
-                    context.getTransformationOutputProperties();
-            transformer.setOutputProperties(outputProps);
-            
-            return transformer;
+            final Source inputModel = pipeline.getModelSource();
+            final Transformer transformer = factory.newTransformer();
+            transformer.transform(inputModel, constructResultPipeline());
         }
         
-        private void setTransformationParams(final Transformer transformer) {
-            final ExpressionEvaluator eval = context.getExpressionEvaluator(); 
+        Result constructResultPipeline() throws TransformerException {
+            Result current = pipeline.getModelResult();
+            final List<TransformationContext> transformations =
+                    new ArrayList<TransformationContext>(
+                            pipeline.getTransformations());
+            java.util.Collections.reverse(transformations);
+            for (final TransformationContext transformation : transformations) {
+                final TransformerReceiver prev = createResult(transformation);
+                prev.setResult(current);
+                current = prev;
+            }
+            return current;
+        }
+        
+        TransformerReceiver createResult(final TransformationContext context)
+            throws TransformerException {
+            final Transformer transformer =
+                    factory.newTransformer(context.getStylesheetSource());
+            setTransformationParams(transformer, context);
+            transformer.setOutputProperties(
+                    pipeline.getTransformationOutputProperties());
+            return new TransformerReceiver((Controller) transformer);
+        }
+        
+        private void setTransformationParams(final Transformer transformer,
+                final TransformationContext context) {
+            final ExpressionEvaluator eval = pipeline.getExpressionEvaluator(); 
             // built in
             transformer.setParameter(xpomName("basedir"),
                     ((File) eval.evaluate("${project.basedir}")).toURI());
@@ -105,45 +121,43 @@ public class XSLTransformer implements POMTransformer {
                 transformer.setParameter(param.getKey(), param.getValue());
         }
 
-        private TransformerFactory getConfiguredFactory() {
-            final TransformerFactoryImpl factory = new TransformerFactoryImpl();
-            final Configuration config = factory.getConfiguration();
-
-            setCollectionResolver(factory);
-            setFactoryAttributes(factory);
-            setURIResolver(factory);
-            setOutputURIResolver(factory);
-            bindExtensionFunctions(config);
-
-            return factory;
+        private void initializeFactory() {
+            factory = new TransformerFactoryImpl();
+            setCollectionResolver();
+            setFactoryAttributes();
+            setURIResolver();
+            setOutputURIResolver();
+            bindExtensionFunctions();
         }
         
-        private void setURIResolver(final TransformerFactory factory) {
-            factory.setURIResolver(chainResolvers(
+        private void setURIResolver() {
+            factory.setURIResolver(new ChainingURIResolver(
                     new StandardLibraryURIResolver(),
-                    new ArtifactURIResolver(context.getArtifactResolver()),
-                    context.getUriResolver()));
+                    new ArtifactURIResolver(pipeline.getArtifactResolver()),
+                    pipeline.getUriResolver()));
         }
 
-        private void setCollectionResolver(final TransformerFactory factory) {
-            final CollectionResolver resolver = context.getCollectionResolver();
+        private void setCollectionResolver() {
+            final CollectionResolver resolver =
+                    pipeline.getCollectionResolver();
             factory.setAttribute(COLLECTION_URI_RESOLVER,
                     new CollectionURIResolverAdaptor(resolver, trax));
         }
 
-        private void setOutputURIResolver(final TransformerFactory factory) {
+        private void setOutputURIResolver() {
             factory.setAttribute(OUTPUT_URI_RESOLVER,
                     new StandardOutputResolver());
         }
         
-        private void bindExtensionFunctions(final Configuration config) {
+        private void bindExtensionFunctions() {
+            final Configuration config = factory.getConfiguration();
             for (final ExtensionFunctionRegistrar r : extensionFunctions)
-                r.registerExtensionFunctions(context, config);
+                r.registerExtensionFunctions(pipeline, config);
         }
         
-        private void setFactoryAttributes(final TransformerFactory factory) {
+        private void setFactoryAttributes() {
             final Map<String, Object> attrs =
-                    context.getTransformationAttributes();
+                    pipeline.getTransformationAttributes();
             for (final Map.Entry<String, Object> attr : attrs.entrySet())
                 factory.setAttribute(attr.getKey(), attr.getValue());
         }

@@ -57,7 +57,7 @@ import net.sf.saxon.value.StringValue;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.dthume.maven.xpom.api.ExpressionEvaluator;
-import org.dthume.maven.xpom.api.TransformationContext;
+import org.dthume.maven.xpom.api.TransformationPipeline;
 import org.dthume.maven.xpom.impl.XPOMConstants;
 import org.dthume.maven.xpom.trax.TraxHelper;
 import org.w3c.dom.Node;
@@ -73,9 +73,10 @@ public class DefaultExtensionFunctionRegistrar
     @Requirement
     private TraxHelper trax;
     
-    public void registerExtensionFunctions(final TransformationContext context,
+    public void registerExtensionFunctions(
+            final TransformationPipeline pipeline,
             final Configuration config) {
-        final ExpressionEvaluator evaluator = context.getExpressionEvaluator();
+        final ExpressionEvaluator evaluator = pipeline.getExpressionEvaluator();
 
         final List<ExtensionFunctionDefinition> functions =
                 new LinkedList<ExtensionFunctionDefinition>();

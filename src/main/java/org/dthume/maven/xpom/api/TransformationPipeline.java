@@ -19,12 +19,32 @@
  */
 package org.dthume.maven.xpom.api;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.URIResolver;
 
-public interface TransformationContext {
-    Source getStylesheetSource();
+public interface TransformationPipeline {
+    String getSourceFileEncoding();
     
-    Map<String, Object> getTransformationParameters();
+    Source getModelSource();
+    
+    Result getModelResult();
+    
+    ExpressionEvaluator getExpressionEvaluator();
+    
+    ArtifactResolver getArtifactResolver();
+    
+    CollectionResolver getCollectionResolver();
+    
+    URIResolver getUriResolver();
+    
+    List<TransformationContext> getTransformations();
+    
+    Properties getTransformationOutputProperties();
+    
+    Map<String, Object> getTransformationAttributes();
 }

@@ -19,12 +19,11 @@
  */
 package org.dthume.maven.xpom.mojo;
 
-import static org.dthume.maven.xpom.trax.ChainingURIResolver.chainResolvers;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,17 +40,20 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.io.SettingsWriter;
+import org.dthume.jaxp.ChainingURIResolver;
+import org.dthume.jaxp.ClasspathResourceURIResolver;
 import org.dthume.maven.util.LogWriter;
 import org.dthume.maven.xpom.api.ArtifactResolver;
 import org.dthume.maven.xpom.api.CollectionResolver;
 import org.dthume.maven.xpom.api.POMTransformer;
 import org.dthume.maven.xpom.api.TransformationContext;
+import org.dthume.maven.xpom.api.TransformationPipeline;
 import org.dthume.maven.xpom.api.XPOMException;
 import org.dthume.maven.xpom.impl.DefaultArtifactResolver;
 import org.dthume.maven.xpom.impl.DefaultTransformationContext;
+import org.dthume.maven.xpom.impl.DefaultTransformationPipeline;
 import org.dthume.maven.xpom.impl.XPOMUtil;
 import org.dthume.maven.xpom.impl.saxon.SettingsURIResolver;
-import org.dthume.maven.xpom.trax.ClasspathURIResolver;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.impl.RemoteRepositoryManager;
@@ -79,6 +81,14 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
      * @parameter expression="${dryRun}" default-value="false"
      */
     protected boolean dryRun = false;
+    
+    /**
+     * If {@code true} then do not run the final "tidy" transformation, even
+     * if one has been specified.
+     *
+     * @parameter expression="${skipTidy}" default-value="false"
+     */
+    private boolean skipTidy = false;
     
     /**
      * The output file to write to instead of the project {@code pom.xml}.
@@ -143,17 +153,23 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     private URIResolver uriResolver = null;
     
     protected final Source getStylesheetSource() {
-        return null != stylesheetFile ?
-                new StreamSource(stylesheetFile) : getStylesheetSourceFromURI();
+        if (null == stylesheetFile && null == stylesheetURI) {
+            final String msg =
+                    "One of stylesheetFile or stylesheetURI must be set";
+            throw new IllegalArgumentException(msg);
+        }
+        return getSourceFromFileOrURI(stylesheetFile, stylesheetURI);
     }
     
-    private Source getStylesheetSourceFromURI()
-    {
+    protected final Source getSourceFromFileOrURI(final File file,
+            final URI uri) {
+        if (null != file) return new StreamSource(file);
+        if (null == uri) return null;
         try {
-            final String href = stylesheetURI.toString();
+            final String href = uri.toString();
             final String base = getBaseDir().toURI().toString(); 
-            final String uri = XPOMUtil.resolveURI(href, base);
-            return new StreamSource(uri);
+            final String resolved = XPOMUtil.resolveURI(href, base);
+            return new StreamSource(resolved);
         } catch (final TransformerException e) {
             throw new XPOMException(e);
         }
@@ -163,15 +179,15 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
         prepareForTransformationInternal();
-        final TransformationContext context = prepareContext();
+        final TransformationPipeline context = preparePipeline();
         transformer.transform(context);
     }
     
     private void prepareForTransformationInternal()
             throws MojoExecutionException, MojoFailureException {
-        uriResolver = chainResolvers(
+        uriResolver = new ChainingURIResolver(
                 new SettingsURIResolver(getSettings(), settingsWriter),
-                new ClasspathURIResolver(getClass()));
+                new ClasspathResourceURIResolver(getClass()));
         
         prepareForTransformation();
     }
@@ -179,9 +195,9 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     protected void prepareForTransformation()
         throws MojoExecutionException, MojoFailureException {}
     
-    private TransformationContext prepareContext() {
-        final DefaultTransformationContext context =
-                new DefaultTransformationContext();
+    private TransformationPipeline preparePipeline() {
+        final DefaultTransformationPipeline context =
+                new DefaultTransformationPipeline();
         
         context.setArtifactResolver(getArtifactResolver());
         context.setCollectionResolver(getCollectionResolver());
@@ -190,25 +206,47 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
         context.setModelResult(getResult());
         context.setModelSource(getSource());
         context.setSourceFileEncoding(getSourceFileEncoding());
-        context.setStylesheetSource(getStylesheetSource());
-        context.setTransformationAttributes(getTransformationAttributeMap());
-        context.setTransformationParameters(getTransformationParameterMap());
         context.setTransformationOutputProperties(getOutputProperties());
-        
+        context.setTransformationAttributes(getTransformationAttributeMap());
+        context.setTransformations(getTransformations());
+
         return context;
+    }
+    
+    private List<TransformationContext> getTransformations() {
+        final List<TransformationContext> transforms =
+                new LinkedList<TransformationContext>();
+        
+        final DefaultTransformationContext main =
+                new DefaultTransformationContext(getStylesheetSource());
+        main.setTransformationParameters(getTransformationParameterMap());
+        transforms.add(main);
+        
+        if (!skipTidy) {
+            final Source tidySource = getTidySource();
+            if (null != tidySource)
+                transforms.add(new DefaultTransformationContext(tidySource));
+        }
+        
+        return transforms;
     }
     
     protected abstract Source getSource();
     
+    protected Source getTidySource() { return null; }
+    
     protected final Result getResult() {
+        Result result = null;
         if (dryRun)
-            return new StreamResult(new LogWriter(getLog()));
-        
-        if (null == outputFile)
-            return new StreamResult(getProjectPOMFile());
-
-        return new StreamResult(outputFile);
+            result = new StreamResult(new LogWriter(getLog()));
+        else if (null == outputFile)
+            result = new StreamResult(getProjectPOMFile());
+        else
+            result = new StreamResult(outputFile);
+        return customizeResult(result);
     }
+    
+    protected Result customizeResult(final Result result) { return result; }
     
     protected final File getOutputFile() { return outputFile; }
     

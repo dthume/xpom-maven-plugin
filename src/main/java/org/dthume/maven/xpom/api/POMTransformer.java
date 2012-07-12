@@ -21,5 +21,5 @@ package org.dthume.maven.xpom.api;
 
 
 public interface POMTransformer {
-    void transform(TransformationContext context);
+    void transform(TransformationPipeline pipeline);
 }
