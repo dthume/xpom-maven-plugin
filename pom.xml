@@ -151,6 +151,20 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <configuration>
+          <test>
+            <mixed>content <like>this</like> works?</mixed>
+            <more-mixed>
+              content <like>this</like> works? even if the <line />
+              is very
+              <long length="1"
+              long-attribute-value="some very long attribute value goes here" />?
+              Then again what if we have a nested <element> with quite a bit of
+              content contained inside it, like this one?</element>
+              or an <even><more>deeply <nested attr="1"> set of data like this
+              here which looks a mess but it shows what </nested> elements
+              may look like</more> sometimes</even>.
+            </more-mixed>
+          </test>
           <includes>
             <include>org.dthume.maven.xpom.*</include>
           </includes>

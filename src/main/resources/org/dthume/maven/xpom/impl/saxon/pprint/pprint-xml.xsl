@@ -27,6 +27,8 @@
   xpath-default-namespace="http://maven.apache.org/POM/4.0.0" 
   version="2.0">
 
+  <!--======================= Stylesheet Parameters  =======================-->
+
   <xsl:param name="defaultEncoding" as="xs:string" select="'UTF-8'" />
   <xsl:param name="defaultIndent" as="xs:string" select="'  '" />
   <xsl:param name="defaultOutputTextAsCData" as="xs:boolean" select="false()" />
@@ -35,6 +37,8 @@
   <xsl:output method="text" />
 
   <xsl:strip-space elements="*" />
+  
+  <!--====================== Newlines and Indentation ======================-->
   
   <xsl:variable name="pp:emptyElSeq" as="element()*" select="()" />
   
@@ -55,6 +59,10 @@
     <xsl:sequence select="
       if (exists($els)) then ($els, $pp:newline) else $els" />
   </xsl:function>
+
+  <xsl:template name="pp:print-newline" as="xs:string">
+    <xsl:sequence select="'&#xA;'" />
+  </xsl:template>
   
   <xsl:template name="pp:print-indent" as="xs:string">
     <xsl:param name="pp:currentIndent" tunnel="yes" as="xs:string" />
@@ -88,6 +96,8 @@
       )" />
   </xsl:template>
   
+  <!--=========================== Text Formatting ===========================-->
+  
   <xsl:template name="pp:escape-text-data" as="xs:string">
     <xsl:param name="text" />
     <xsl:variable name="charMap" as="element()*">
@@ -110,6 +120,59 @@
     </xsl:variable>
     <xsl:sequence select="string-join($escaped, '')" />
   </xsl:template>
+  
+  <xsl:template name="pp:print-inline-element-content" as="xs:string">
+    <xsl:param name="pp:currentIndent" tunnel="yes" as="xs:string" />
+    <xsl:param name="pp:maxColumns" tunnel="yes" as="xs:integer" />
+    <xsl:param name="tokens" as="xs:string*" />
+    <xsl:param name="currentLine" as="xs:string" select="''" />
+    <xsl:param name="result" as="xs:string*" select="()" />
+    
+    <xsl:variable name="freshLine" as="xs:boolean" select="
+      0 = string-length($currentLine)" />
+    <xsl:choose>
+      <xsl:when test="exists($tokens)">
+        <xsl:variable name="nextLine" as="xs:string" select="
+          concat(
+            $currentLine,
+            if ($freshLine) then $pp:currentIndent else ' ',
+            $tokens[1]
+          )" />
+        <xsl:variable name="moreRoomOnLine" as="xs:boolean" select="
+          $pp:maxColumns ge string-length($nextLine)" />
+        <xsl:choose>
+          <xsl:when test="$moreRoomOnLine">
+            <xsl:call-template name="pp:print-inline-element-content">
+              <xsl:with-param name="tokens" select="subsequence($tokens, 2)" />
+              <xsl:with-param name="currentLine" select="$nextLine" />
+              <xsl:with-param name="result" select="$result" />
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:when test="$freshLine">
+            <xsl:call-template name="pp:print-inline-element-content">
+              <xsl:with-param name="tokens" select="subsequence($tokens, 2)" />
+              <xsl:with-param name="result" select="($result, $nextLine)" />
+            </xsl:call-template>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:call-template name="pp:print-inline-element-content">
+              <xsl:with-param name="tokens" select="$tokens" />
+              <xsl:with-param name="result" select="($result, $currentLine)" />
+            </xsl:call-template>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select=
+          "string-join(
+            if ($freshLine) then $result else ($result, $currentLine),
+            '&#xA;'
+           )" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  
+  <!--========================= Attribute Handling =========================-->
 
   <xsl:template mode="pp:print-attribute-value" match="@*" as="xs:string">
     <xsl:call-template name="pp:escape-text-data">
@@ -140,6 +203,8 @@
   
   <xsl:template mode="pp:pretty-print-xml-attributes" match="*[empty(@*)]"
   ></xsl:template>
+  
+  <!--========================= Namespace Handling =========================-->
   
   <xsl:template name="pp:namespaces-for-element" as="element()*">
     <xsl:param name="el" as="element()?" />
@@ -202,9 +267,14 @@
         ''
       )" />
   </xsl:template>
+  
+  <!--========================== Element Handling ==========================-->
 
-  <xsl:template mode="pp:pretty-print-xml" match="
+  <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
     *[not(self::pp:*) and exists(child::node())]">
+    <xsl:param name="pp:maxColumns" as="xs:integer" tunnel="yes" />
+    <xsl:param name="pp:printAsInlineBlock" as="xs:boolean" tunnel="yes" />
+    
     <xsl:variable name="name" select="name()" />
     
     <xsl:variable name="contentIndent" as="xs:string">
@@ -212,7 +282,9 @@
     </xsl:variable>
     
     <xsl:variable name="openElementHead">
-      <xsl:call-template name="pp:print-newline-indent" />
+      <xsl:if test="not($pp:printAsInlineBlock)">
+        <xsl:call-template name="pp:print-newline-indent" />
+      </xsl:if>
       <xsl:text>&lt;</xsl:text>
       <xsl:value-of select="$name" />
     </xsl:variable>
@@ -239,9 +311,12 @@
     
     <xsl:variable name="hasChildElements" as="xs:boolean" select="
       exists(child::*)" />
+      
+    <xsl:variable name="isMixedContent" as="xs:boolean" select="
+      exists(child::text())" />
     
     <xsl:variable name="openElement" as="xs:string*">
-      <xsl:call-template name="pp:construct-open-element">
+      <xsl:call-template name="pp:construct-open-block-element">
         <xsl:with-param name="pp:currentIndent" tunnel="yes" select="
           $contentIndent" />
         <xsl:with-param name="input" select="$nsAndAttrs" />
@@ -250,39 +325,80 @@
       </xsl:call-template>
     </xsl:variable>
     
-    <xsl:variable name="body">
-      <xsl:apply-templates mode="pp:pretty-print-element-content" select=".">
-        <xsl:with-param name="pp:currentIndent" tunnel="yes" select="
-          $contentIndent" />
-      </xsl:apply-templates>
-    </xsl:variable>
-    
-    <xsl:variable name="closeElement">
-      <xsl:if test="$hasChildElements">
+    <xsl:variable name="closeElement" as="xs:string*">
+      <xsl:if test="
+        $hasChildElements and not($pp:printAsInlineBlock or $isMixedContent)">
         <xsl:call-template name="pp:print-newline-indent" />
       </xsl:if>
       <xsl:text>&lt;/</xsl:text>
       <xsl:value-of select="$name" />
       <xsl:text>&gt;</xsl:text>
     </xsl:variable>
+
+    <xsl:variable name="body" as="xs:string*">
+      <xsl:apply-templates mode="pp:pretty-print-element-content" select=".">
+        <xsl:with-param name="pp:currentIndent" tunnel="yes" select="
+          $contentIndent" />
+        <xsl:with-param name="pp:isMixedContent" tunnel="yes" select="
+          $isMixedContent" />
+        <xsl:with-param name="pp:printAsInlineBlock" tunnel="yes" select="
+          $isMixedContent" />
+      </xsl:apply-templates>
+    </xsl:variable>
     
-    <xsl:sequence select="
-      concat(
-        $openElement,
-        $body,
-        $closeElement
+    <xsl:variable name="elementOnOneLine" as="xs:string" select="
+      string-join(
+        (
+          $openElement,
+          string-join($body, ' '),
+          $closeElement
+        ),
+        ''
       )" />
+
+    <xsl:choose>
+      <xsl:when test="$pp:printAsInlineBlock">
+        <xsl:sequence select="
+          (
+            string-join(($openElement, $body[1]), ''),
+            subsequence($body, 2, count($body) - 2),
+            string-join(($body[count($body)], $closeElement), '')
+          )" />
+      </xsl:when>
+      <xsl:when test="
+        $isMixedContent and $pp:maxColumns lt string-length($elementOnOneLine)">
+        <xsl:variable name="result" as="xs:string*">
+          <xsl:sequence select="$openElement" />
+          <xsl:call-template name="pp:print-newline" />
+          <xsl:call-template name="pp:print-inline-element-content">
+            <xsl:with-param name="tokens" select="$body" />
+            <xsl:with-param name="pp:currentIndent" tunnel="yes" select="
+              $contentIndent" />
+          </xsl:call-template>
+          <xsl:call-template name="pp:print-newline-indent" />
+          <xsl:sequence select="$closeElement" />
+        </xsl:variable>
+        <xsl:sequence select="string-join($result, '')" />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="$elementOnOneLine" />
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
-  <xsl:template mode="pp:pretty-print-element-content" match="element()">
+  <xsl:template mode="pp:pretty-print-element-content" match="
+    element()">
     <xsl:apply-templates mode="pp:pretty-print-xml" select="node()" />
   </xsl:template>
 
-  <xsl:template mode="pp:pretty-print-xml" match="
+  <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
     *[not(self::pp:*) and empty(child::node())]">
+    <xsl:param name="pp:printAsInlineBlock" as="xs:boolean" tunnel="yes" />
     <xsl:variable name="name" select="name()" />
     <xsl:variable name="startElement">
-      <xsl:call-template name="pp:print-newline-indent" />
+      <xsl:if test="not($pp:printAsInlineBlock)">
+        <xsl:call-template name="pp:print-newline-indent" />
+      </xsl:if>
       <xsl:text>&lt;</xsl:text>
       <xsl:value-of select="$name" />
     </xsl:variable>
@@ -293,17 +409,18 @@
       <xsl:apply-templates mode="pp:pretty-print-xml-attributes" select="." />
     </xsl:variable>
     <xsl:variable name="elementTail">
-      <xsl:text> /&gt;</xsl:text>
+      <xsl:text>/&gt;</xsl:text>
     </xsl:variable>
+    <xsl:variable name="tokens" as="xs:string*" select="
+      ($startElement, $namespaces, $attributes, $elementTail)" />
     <xsl:sequence select="
-      string-join(
-        ($startElement, $namespaces, $attributes, $elementTail),
-        ''
-      )" />
+      if ($pp:printAsInlineBlock)
+      then $tokens
+      else string-join($tokens, ' ')" />
   </xsl:template>
 
   <xsl:template mode="pp:pretty-print-xml" match="pp:newline">
-    <xsl:text>&#xA;</xsl:text>
+    <xsl:call-template name="pp:print-newline" />
   </xsl:template>
   
   <xsl:template mode="pp:pretty-print-xml" match="pp:indent">
@@ -314,23 +431,31 @@
     <xsl:call-template name="pp:print-newline-indent" />
   </xsl:template>
   
-  <xsl:template mode="pp:pretty-print-xml" match="text()">
+  <xsl:template mode="pp:pretty-print-xml" match="text()" as="xs:string*">
     <xsl:param name="pp:outputTextAsCData" as="xs:boolean" tunnel="yes" />
-    <xsl:choose>
-      <xsl:when test="$pp:outputTextAsCData">
-        <xsl:text>&lt;![CDATA[</xsl:text>
-        <xsl:sequence select="normalize-space()" />
-        <xsl:text>]]&gt;</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:call-template name="pp:escape-text-data">
-          <xsl:with-param name="text" select="." />
-        </xsl:call-template>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:param name="pp:maxColumns" as="xs:integer" tunnel="yes" />
+    <xsl:param name="pp:printAsInlineBlock" as="xs:boolean" tunnel="yes" />
+    <xsl:variable name="rawText" as="xs:string">
+      <xsl:choose>
+        <xsl:when test="$pp:outputTextAsCData">
+          <xsl:text>&lt;![CDATA[</xsl:text>
+          <xsl:sequence select="normalize-space()" />
+          <xsl:text>]]&gt;</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="pp:escape-text-data">
+            <xsl:with-param name="text" select="normalize-space()" />
+          </xsl:call-template>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:sequence select="
+      if ($pp:printAsInlineBlock)
+      then tokenize($rawText, '\s+')
+      else $rawText" />
   </xsl:template>
   
-  <xsl:template name="pp:construct-open-element" as="xs:string*">
+  <xsl:template name="pp:construct-open-block-element" as="xs:string">
     <xsl:param name="input" as="xs:string*" />
     <xsl:param name="firstLine" as="xs:string" />
     <xsl:param name="lastLine" as="xs:string" />
@@ -347,7 +472,7 @@
 
     <xsl:choose>
       <xsl:when test="$isMoreRoomOnLine and exists($input)">
-        <xsl:call-template name="pp:construct-open-element">
+        <xsl:call-template name="pp:construct-open-block-element">
           <xsl:with-param name="input" select="subsequence($input, 2)" />
           <xsl:with-param name="firstLine" select="$nextFirstLine" />
           <xsl:with-param name="lastLine" select="$lastLine" />
@@ -392,6 +517,8 @@
           $startIndent" />
         <xsl:with-param name="pp:indentString" tunnel="yes" select="
           $indentString" />
+        <xsl:with-param name="pp:printAsInlineBlock" tunnel="yes"
+          select="false()" />
         <xsl:with-param name="pp:maxColumns" tunnel="yes" select="
           $maxColumns" />
         <xsl:with-param name="pp:outputTextAsCData" tunnel="yes" select="
@@ -400,6 +527,8 @@
     </xsl:variable>
     <xsl:sequence select="concat($xmlDecl, $docBody)" />
   </xsl:template>
+
+  <!--========================== Main Entry Point ==========================-->
   
   <xsl:template match="/">
     <xsl:call-template name="pp:pretty-print-xml">
