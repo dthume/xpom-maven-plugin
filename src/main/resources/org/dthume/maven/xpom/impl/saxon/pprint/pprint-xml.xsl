@@ -33,6 +33,7 @@
   <xsl:param name="defaultIndent" as="xs:string" select="'  '" />
   <xsl:param name="defaultOutputTextAsCData" as="xs:boolean" select="false()" />
   <xsl:param name="defaultMaxColumns" as="xs:integer" select="80" />
+  <xsl:param name="defaultNewlineString" as="xs:string" select="'&#xA;'" />
 
   <xsl:output method="text" />
 
@@ -40,8 +41,11 @@
   
   <!--====================== Newlines and Indentation ======================-->
   
-  <xsl:variable name="pp:emptyElSeq" as="element()*" select="()" />
+  <xsl:variable name="pp:newlineChar" as="xs:string" select="
+    $defaultNewlineString" />
   
+  <xsl:variable name="pp:emptyElSeq" as="element()*" select="()" />
+
   <xsl:variable name="pp:newline" as="element()">
     <pp:newline />
   </xsl:variable>
@@ -61,7 +65,7 @@
   </xsl:function>
 
   <xsl:template name="pp:print-newline" as="xs:string">
-    <xsl:sequence select="'&#xA;'" />
+    <xsl:sequence select="$pp:newlineChar" />
   </xsl:template>
   
   <xsl:template name="pp:print-indent" as="xs:string">
@@ -77,7 +81,7 @@
         <xsl:with-param name="level" select="$extraIndentLevel" />
       </xsl:call-template>
     </xsl:variable>
-    <xsl:sequence select="concat('&#xA;', $indent)" />
+    <xsl:sequence select="concat($pp:newlineChar, $indent)" />
   </xsl:template>
   
   <xsl:template name="pp:push-indent" as="xs:string">
@@ -166,7 +170,7 @@
         <xsl:sequence select=
           "string-join(
             if ($freshLine) then $result else ($result, $currentLine),
-            '&#xA;'
+            $pp:newlineChar
            )" />
       </xsl:otherwise>
     </xsl:choose>
