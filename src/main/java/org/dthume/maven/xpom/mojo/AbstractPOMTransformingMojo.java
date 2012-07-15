@@ -30,6 +30,9 @@ import java.util.Properties;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamResult;
+
+import org.dthume.maven.util.LogWriter;
 
 /**
  * @author dth
@@ -142,6 +145,18 @@ public abstract class AbstractPOMTransformingMojo
         }
         
         return props;
+    }
+    
+    @Override
+    protected final Result getResult() {
+        Result result = null;
+        if (dryRun)
+            result = new StreamResult(new LogWriter(getLog()));
+        else if (null == outputFile)
+            result = new StreamResult(getProjectPOMFile());
+        else
+            result = new StreamResult(outputFile);
+        return result;
     }
 
     @Override

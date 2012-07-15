@@ -235,18 +235,7 @@ public abstract class AbstractTransformingMojo extends AbstractSCMAwareMojo {
     
     protected Source getTidySource() { return null; }
     
-    protected final Result getResult() {
-        Result result = null;
-        if (dryRun)
-            result = new StreamResult(new LogWriter(getLog()));
-        else if (null == outputFile)
-            result = new StreamResult(getProjectPOMFile());
-        else
-            result = new StreamResult(outputFile);
-        return customizeResult(result);
-    }
-    
-    protected Result customizeResult(final Result result) { return result; }
+    protected abstract Result getResult();
     
     protected final File getOutputFile() { return outputFile; }
     

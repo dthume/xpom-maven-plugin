@@ -20,6 +20,7 @@
 package org.dthume.maven.xpom.impl.saxon;
 
 import static net.sf.saxon.lib.FeatureKeys.COLLECTION_URI_RESOLVER;
+import static net.sf.saxon.lib.FeatureKeys.COLLATION_URI_RESOLVER;
 import static net.sf.saxon.lib.FeatureKeys.OUTPUT_URI_RESOLVER;
 import static org.dthume.maven.xpom.impl.XPOMConstants.xpomName;
 
@@ -123,6 +124,7 @@ public class XSLTransformer implements POMTransformer {
 
         private void initializeFactory() {
             factory = new TransformerFactoryImpl();
+            setCollationResolver();
             setCollectionResolver();
             setFactoryAttributes();
             setURIResolver();
@@ -137,6 +139,11 @@ public class XSLTransformer implements POMTransformer {
                     pipeline.getUriResolver()));
         }
 
+        private void setCollationResolver() {
+            factory.setAttribute(COLLATION_URI_RESOLVER,
+                    new StandardCollationsResolver());
+        }
+        
         private void setCollectionResolver() {
             final CollectionResolver resolver =
                     pipeline.getCollectionResolver();

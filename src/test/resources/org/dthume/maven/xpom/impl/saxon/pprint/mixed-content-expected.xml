@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+  <mixed>
+    content with formatting that&apos;s actually a complete disaster <with />
+    some random nodes, not to mention <nested stuff="true">which would be a
+    nightmare to read normally</nested>
+  </mixed>
+</document>
