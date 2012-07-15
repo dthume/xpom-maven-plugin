@@ -29,11 +29,19 @@
 
   <xsl:template mode="pp:print-attribute-value" as="xs:string" match="
     @xsi:schemaLocation" >
-    <xsl:variable name="indent" as="xs:string">
-      <xsl:call-template name="pp:print-newline-indent">
-        <xsl:with-param name="extraIndentLevel" select="1" />
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:value-of select="string-join(tokenize(., '\s+'), $indent)" />
+    <xsl:param name="pp:printAsInlineBlock" as="xs:boolean" tunnel="yes" />
+    <xsl:choose>
+      <xsl:when test="$pp:printAsInlineBlock">
+        <xsl:next-match />
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="indent" as="xs:string">
+          <xsl:call-template name="pp:print-newline-indent">
+            <xsl:with-param name="extraIndentLevel" select="1" />
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:value-of select="string-join(tokenize(., '\s+'), $indent)" />
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 </xsl:stylesheet>
