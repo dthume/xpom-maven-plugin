@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.util.Collection;
 
 import javax.xml.transform.Source;
@@ -16,6 +17,7 @@ import net.sf.saxon.TransformerFactoryImpl;
 
 import org.codehaus.plexus.util.IOUtil;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.dthume.jaxp.ClasspathResourceURIResolver;
 import org.dthume.jaxp.ClasspathSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,6 +33,7 @@ public class PPrintXmlTest {
     private Transformer transformer;
     private File outputFile;
     
+    private Source transformSource;
     private Source inputSource;
     private String expectedSource;
 
@@ -38,13 +41,19 @@ public class PPrintXmlTest {
         inputSource =
                 new ClasspathSource(test + "-input.xml", getClass());
         expectedSource = test + "-expected.xml";
+        
+        String xslName = test + "-stylesheet.xsl";
+        if (null == getClass().getResourceAsStream(xslName))
+            xslName = "pprint-xml.xsl";
+        transformSource = new ClasspathSource(xslName, getClass());
     }
     
     @Parameters
     public static Collection<Object[]> parameters() {
         return java.util.Arrays.asList(new Object[][] {
                 {"basic-document"},
-                {"mixed-content"}
+                {"mixed-content"},
+                {"xmlns-ordering"}
         });
     }
     
@@ -71,7 +80,8 @@ public class PPrintXmlTest {
     @Before
     public void beforeEachTest() throws TransformerException {
         final TransformerFactory factory = new TransformerFactoryImpl();
-        final Source xsl = new ClasspathSource("pprint-xml.xsl", getClass());
+        factory.setURIResolver(new ClasspathResourceURIResolver(getClass()));
+        final Source xsl = transformSource;
         transformer = factory.newTransformer(xsl);
     }
     

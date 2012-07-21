@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+  <el1 xmlns="defaultNS" xmlns:b="b" xmlns:a="a" xmlns:c="c" />
+  <a:el2 xmlns:c="c" xmlns:a="a" xmlns:b="b" />
+</document>

@@ -34,10 +34,19 @@
   <xsl:param name="defaultOutputTextAsCData" as="xs:boolean" select="false()" />
   <xsl:param name="defaultMaxColumns" as="xs:integer" select="80" />
   <xsl:param name="defaultNewlineString" as="xs:string" select="'&#xA;'" />
+  <xsl:param name="defaultNSSortingStrategyName" as="xs:QName" select="
+    xs:QName('pp:ns-sort-none')" />
+  <xsl:param name="defaultNSSortingStrategy" as="element()">
+    <xsl:element name="{local-name-from-QName($defaultNSSortingStrategyName)}"
+      namespace="{namespace-uri-from-QName($defaultNSSortingStrategyName)}" />
+  </xsl:param>
 
   <xsl:output method="text" />
 
   <xsl:strip-space elements="*" />
+
+  <xsl:variable name="pp:defaultSortingCollation" as="xs:string" select="
+    'http://www.w3.org/2005/xpath-functions/collation/codepoint'" />
   
   <!--====================== Newlines and Indentation ======================-->
   
@@ -209,6 +218,83 @@
   ></xsl:template>
   
   <!--========================= Namespace Handling =========================-->
+
+  <xsl:template mode="pp:sort-xmlns-declarations" as="element()*" match="
+    pp:ns-sort-none">
+    <xsl:param name="pp:namespaces" as="element()*" tunnel="yes" />
+    <xsl:sequence select="$pp:namespaces" />
+  </xsl:template>
+  
+  <xsl:template mode="pp:sort-xmlns-declarations" as="element()*" match="
+    pp:ns-sort-by-prefix">
+    <xsl:param name="pp:namespaces" as="element()*" tunnel="yes" />
+    <xsl:variable name="config" as="element()" select="." />
+    <xsl:for-each select="$pp:namespaces">
+      <xsl:sort select="@prefix"
+        collation="{($config/@collation, $pp:defaultSortingCollation)[1]}"
+        order="{($config/@order, 'ascending')[1]}"
+        stable="{($config/@stable, 'yes')[1]}"
+        data-type="{($config/@data-type, 'text')[1]}" />
+      <xsl:sequence select="." />
+    </xsl:for-each>
+  </xsl:template>
+  
+  <xsl:template mode="pp:sort-xmlns-declarations" as="element()*" match="
+    pp:ns-sort-by-uri">
+    <xsl:param name="pp:namespaces" as="element()*" tunnel="yes" />
+    <xsl:variable name="config" as="element()" select="." />
+    <xsl:for-each select="$pp:namespaces">
+      <xsl:sort select="@uri"
+        collation="{($config/@collation, $pp:defaultSortingCollation)[1]}"
+        order="{($config/@order, 'ascending')[1]}"
+        stable="{($config/@stable, 'yes')[1]}"
+        data-type="{($config/@data-type, 'text')[1]}" />
+      <xsl:sequence select="." />
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template mode="pp:sort-xmlns-declarations" as="element()*" match="
+    *[@pp:default-ns-first = 'yes']">
+    <xsl:param name="pp:namespaces" as="element()*" tunnel="yes" />
+    <xsl:variable name="defaultNS" as="element()?" select="
+      $pp:namespaces[@prefix = '']" />
+    <xsl:sequence select="$defaultNS" />
+    <xsl:next-match>
+      <xsl:with-param name="pp:namespaces" tunnel="yes" select="
+        $pp:namespaces except $defaultNS" />
+    </xsl:next-match>
+  </xsl:template>
+  
+  <xsl:template mode="pp:sort-xmlns-declarations" as="element()*" match="
+    *[@pp:element-ns-first = 'yes']">
+    <xsl:param name="pp:namespaces" as="element()*" tunnel="yes" />
+    <xsl:param name="pp:currentNode" as="node()" tunnel="yes" />
+    <xsl:variable name="elementNS" as="element()?" select="
+      $pp:namespaces[
+        @prefix = prefix-from-QName(node-name($pp:currentNode))
+      ]" />
+    <xsl:sequence select="$elementNS" />
+    <xsl:next-match>
+      <xsl:with-param name="pp:namespaces" tunnel="yes" select="
+        $pp:namespaces except $elementNS" />
+    </xsl:next-match>
+  </xsl:template>
+  
+  <xsl:function name="pp:print-namespace-declaration" as="xs:string">
+    <xsl:param name="ns" as="element()" />
+    <xsl:sequence select="
+      string-join(
+        (
+          'xmlns',
+          if ('' = $ns/@prefix) then '' else ':',
+          $ns/@prefix,
+          '=&quot;',
+          $ns/@uri,
+          '&quot;'
+        ),
+        ''
+      )" />
+  </xsl:function>
   
   <xsl:template name="pp:namespaces-for-element" as="element()*">
     <xsl:param name="el" as="element()?" />
@@ -248,28 +334,33 @@
     </xsl:for-each>
   </xsl:template>
 
-  <xsl:template mode="pp:pretty-print-xml-namespaces" match="
-    @* | text() | comment() | processing-instruction()"></xsl:template>
-  
-  <xsl:template mode="pp:pretty-print-xml-namespaces" as="xs:string*" match="
-    element()">
-    <xsl:variable name="declaredNS" as="element()*">
+  <xsl:template match="@* | text() | comment() | processing-instruction()"
+    mode="pp:extract-declared-namespaces-for-element
+          pp:pretty-print-xml-namespaces" ></xsl:template>
+
+  <xsl:template as="element()*" match="element()"
+    mode="pp:extract-declared-namespaces-for-element">
+    <xsl:param name="pp:nsSortingStrategy" as="element()" tunnel="yes" />
+    <xsl:variable name="ns" as="element()*">
       <xsl:call-template name="pp:declared-namespaces-for-element">
         <xsl:with-param name="el" select="." />
       </xsl:call-template>
     </xsl:variable>
+    <xsl:apply-templates mode="pp:sort-xmlns-declarations"
+      select="$pp:nsSortingStrategy">
+      <xsl:with-param name="pp:namespaces" select="$ns" tunnel="yes" />
+      <xsl:with-param name="pp:currentNode" select="." tunnel="yes" />
+    </xsl:apply-templates>
+  </xsl:template>
+  
+  <xsl:template mode="pp:pretty-print-xml-namespaces" as="xs:string*" match="
+    element()">
+    <xsl:variable name="declaredNS" as="element()*">
+      <xsl:apply-templates mode="pp:extract-declared-namespaces-for-element"
+        select="." />
+    </xsl:variable>
     <xsl:sequence select="
-      for $ns in $declaredNS return string-join(
-        (
-          'xmlns',
-          if ('' = $ns/@prefix) then '' else ':',
-          $ns/@prefix,
-          '=&quot;',
-          $ns/@uri,
-          '&quot;'
-        ),
-        ''
-      )" />
+      for $ns in $declaredNS return pp:print-namespace-declaration($ns)" />
   </xsl:template>
   
   <!--========================== Element Handling ==========================-->
@@ -516,6 +607,8 @@
     <xsl:param name="outputTextAsCData" as="xs:boolean" select="
       $defaultOutputTextAsCData" />
     <xsl:param name="startIndent" as="xs:string" select="''" />
+    <xsl:param name="nsSortingStrategy" as="element()" select="
+      $defaultNSSortingStrategy" />
     <xsl:variable name="xmlDecl">
       <xsl:text>&lt;?xml version=&quot;1.0&quot; encoding=&quot;</xsl:text>
       <xsl:value-of select="$encoding" />
@@ -533,6 +626,8 @@
           $maxColumns" />
         <xsl:with-param name="pp:outputTextAsCData" tunnel="yes" select="
           $outputTextAsCData" />
+        <xsl:with-param name="pp:nsSortingStrategy" tunnel="yes" select="
+          $defaultNSSortingStrategy" />
       </xsl:apply-templates>
     </xsl:variable>
     <xsl:sequence select="concat($xmlDecl, $docBody)" />
