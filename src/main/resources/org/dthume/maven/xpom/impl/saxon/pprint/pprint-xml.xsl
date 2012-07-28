@@ -29,6 +29,7 @@
 
   <!--======================= Stylesheet Parameters  =======================-->
 
+  <xsl:param name="defaultXmlVersion" as="xs:string" select="'1.0'" />
   <xsl:param name="defaultEncoding" as="xs:string" select="'UTF-8'" />
   <xsl:param name="defaultIndent" as="xs:string" select="'  '" />
   <xsl:param name="defaultOutputTextAsCData" as="xs:boolean" select="false()" />
@@ -277,6 +278,41 @@
     <xsl:next-match>
       <xsl:with-param name="pp:namespaces" tunnel="yes" select="
         $pp:namespaces except $elementNS" />
+    </xsl:next-match>
+  </xsl:template>
+  
+  <xsl:template mode="pp:sort-xmlns-declarations" as="element()*" match="
+    *[exists(@pp:order-first)]">
+    <xsl:param name="pp:namespaces" as="element()*" tunnel="yes" />
+    <xsl:param name="pp:currentNode" as="node()" tunnel="yes" />
+    <xsl:variable name="config" as="xs:string*" select="
+      tokenize(@pp:order-first, '\s+')" />
+    <xsl:for-each select="$config">
+      <xsl:if test=". != 'element' and . != 'default'">
+        <xsl:message terminate="yes">
+          <xsl:text>Unknown @pp:order-first value: '</xsl:text>
+          <xsl:value-of select="." />
+          <xsl:text>'; must be one of 'default' or 'element'</xsl:text>
+        </xsl:message>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:variable name="elementNS" as="element()?" select="
+      $pp:namespaces[
+        @prefix = prefix-from-QName(node-name($pp:currentNode))
+      ]" />
+    <xsl:variable name="defaultNS" as="element()?" select="
+      $pp:namespaces[@prefix = '']" />
+    <xsl:variable name="firstNS" as="element()*">
+      <xsl:sequence select="
+        for $type in $config
+        return if ($type = 'element')
+          then $elementNS
+          else $defaultNS" />
+    </xsl:variable>
+    <xsl:sequence select="$firstNS" />
+    <xsl:next-match>
+      <xsl:with-param name="pp:namespaces" tunnel="yes" select="
+        $pp:namespaces except $firstNS" />
     </xsl:next-match>
   </xsl:template>
   
@@ -601,6 +637,7 @@
   
   <xsl:template name="pp:pretty-print-xml" as="xs:string">
     <xsl:param name="root" />
+    <xsl:param name="xmlVersion" as="xs:string" select="$defaultXmlVersion" />
     <xsl:param name="encoding" as="xs:string" select="$defaultEncoding" />
     <xsl:param name="indentString" as="xs:string" select="$defaultIndent" />
     <xsl:param name="maxColumns" as="xs:integer" select="$defaultMaxColumns" />
@@ -610,7 +647,9 @@
     <xsl:param name="nsSortingStrategy" as="element()" select="
       $defaultNSSortingStrategy" />
     <xsl:variable name="xmlDecl">
-      <xsl:text>&lt;?xml version=&quot;1.0&quot; encoding=&quot;</xsl:text>
+      <xsl:text>&lt;?xml version=&quot;</xsl:text>
+      <xsl:value-of select="$xmlVersion" />
+      <xsl:text>&quot; encoding=&quot;</xsl:text>
       <xsl:value-of select="$encoding" />
       <xsl:text>&quot;?&gt;</xsl:text>
     </xsl:variable>

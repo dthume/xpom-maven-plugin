@@ -18,7 +18,6 @@
   limitations under the License.
   #L%
   -->
-
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:pp="urn:xpom:core:pretty-print-xml"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -30,7 +29,7 @@
     href="resource:org/dthume/maven/xpom/impl/saxon/pprint/pprint-xml.xsl" />
 
   <xsl:param name="defaultNSSortingStrategy" as="element()">
-    <pp:ns-sort-by-prefix pp:element-ns-first="yes" />
+    <pp:ns-sort-by-prefix pp:order-first="element default" />
   </xsl:param>
 
 </xsl:stylesheet>
