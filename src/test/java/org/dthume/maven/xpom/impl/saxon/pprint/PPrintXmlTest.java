@@ -44,7 +44,7 @@ public class PPrintXmlTest {
         return java.util.Arrays.asList(new Object[][] {
                 {"basic-document"},
                 {"mixed-content"},
-                {"xmlns-ordering"}
+                {"xmlns-ordering"},                {"pi-and-comment"}
         });
     }
     

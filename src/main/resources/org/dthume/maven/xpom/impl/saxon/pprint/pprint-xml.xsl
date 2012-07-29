@@ -24,7 +24,6 @@
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   
   exclude-result-prefixes="#all"
-  xpath-default-namespace="http://maven.apache.org/POM/4.0.0" 
   version="2.0">
 
   <!--======================= Stylesheet Parameters  =======================-->
@@ -41,6 +40,9 @@
     <xsl:element name="{local-name-from-QName($defaultNSSortingStrategyName)}"
       namespace="{namespace-uri-from-QName($defaultNSSortingStrategyName)}" />
   </xsl:param>
+  <xsl:param name="defaultUseQuotForAttributes" as="xs:boolean" select="
+    true()" />
+  <xsl:param name="defaultUseQuotForXmlns" as="xs:boolean" select="true()" />
 
   <xsl:output method="text" />
 
@@ -199,12 +201,19 @@
   </xsl:template>
   
   <xsl:template mode="pp:pretty-print-xml-attributes" match="@*">
+    <xsl:param name="pp:useQuotForAttributes" as="xs:boolean" tunnel="yes" />
+    <xsl:variable name="delim" as="xs:string">
+      <xsl:choose>
+        <xsl:when test="$pp:useQuotForAttributes">&quot;</xsl:when>
+        <xsl:otherwise>&apos;</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="body" as="xs:string">
       <xsl:apply-templates mode="pp:print-attribute-value" select="." />
     </xsl:variable>
     <xsl:sequence select="
       string-join(
-        (name(), '=&quot;', $body, '&quot;'),
+        (name(), '=', $delim, $body, $delim),
         ''
       )" />
   </xsl:template>
@@ -331,6 +340,26 @@
         ''
       )" />
   </xsl:function>
+
+  <xsl:template mode="pp:print-namespace-declaration" as="xs:string" match="ns">
+    <xsl:param name="pp:useQuotForXmlns" as="xs:boolean" tunnel="yes" />
+    <xsl:variable name="delim" as="xs:string">
+      <xsl:choose>
+        <xsl:when test="$pp:useQuotForXmlns">&quot;</xsl:when>
+        <xsl:otherwise>&apos;</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:sequence select="
+      concat(
+        'xmlns',
+        if ('' = @prefix) then '' else ':',
+        @prefix,
+        '=',
+        $delim,
+        @uri,
+        $delim
+      )" />
+  </xsl:template>
   
   <xsl:template name="pp:namespaces-for-element" as="element()*">
     <xsl:param name="el" as="element()?" />
@@ -395,8 +424,8 @@
       <xsl:apply-templates mode="pp:extract-declared-namespaces-for-element"
         select="." />
     </xsl:variable>
-    <xsl:sequence select="
-      for $ns in $declaredNS return pp:print-namespace-declaration($ns)" />
+    <xsl:apply-templates mode="pp:print-namespace-declaration" select="
+      $declaredNS" />
   </xsl:template>
 
   <!--============================ PI Handling =============================-->
@@ -712,6 +741,10 @@
           $outputTextAsCData" />
         <xsl:with-param name="pp:nsSortingStrategy" tunnel="yes" select="
           $defaultNSSortingStrategy" />
+        <xsl:with-param name="pp:useQuotForAttributes" tunnel="yes" select="
+          $defaultUseQuotForAttributes" />
+        <xsl:with-param name="pp:useQuotForXmlns" tunnel="yes" select="
+          $defaultUseQuotForXmlns" />
       </xsl:apply-templates>
     </xsl:variable>
     <xsl:sequence select="concat($xmlDecl, $docBody)" />
