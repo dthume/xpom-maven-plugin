@@ -211,7 +211,7 @@
   
   <xsl:template mode="pp:pretty-print-xml-attributes" match="*[exists(@*)]">
     <xsl:for-each select="@*">
-      <xsl:apply-templates mode="#current" select="."/>
+      <xsl:apply-templates mode="#current" select="." />
     </xsl:for-each>
   </xsl:template>
   
@@ -398,8 +398,53 @@
     <xsl:sequence select="
       for $ns in $declaredNS return pp:print-namespace-declaration($ns)" />
   </xsl:template>
+
+  <!--============================ PI Handling =============================-->
+
+  <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
+    processing-instruction()">
+    <xsl:variable name="lineBreak" as="xs:string">
+      <xsl:call-template name="pp:print-newline-indent" />
+    </xsl:variable>
+    <xsl:sequence select="
+      concat($lineBreak, '&lt;?', name(), ' ', ., '?&gt;')" />
+  </xsl:template>
+
+  <xsl:template mode="pp:pretty-print-element-content" match="
+    processing-instruction()">
+    <xsl:apply-templates mode="pp:pretty-print-xml" select="." />
+  </xsl:template>
+  
+  <!--========================== Comment Handling ==========================-->
+
+  <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
+    comment()">
+    <xsl:variable name="lineBreak" as="xs:string">
+      <xsl:call-template name="pp:print-newline-indent" />
+    </xsl:variable>
+    <xsl:sequence select="
+      concat($lineBreak, '&lt;!--', ., '--&gt;')" />
+  </xsl:template>
+
+  <xsl:template mode="pp:pretty-print-element-content" match="
+    comment()">
+    <xsl:apply-templates mode="pp:pretty-print-xml" select="." />
+  </xsl:template>
   
   <!--========================== Element Handling ==========================-->
+
+  <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
+    document-node()">
+    <xsl:apply-templates mode="pp:pretty-print-element-content" select="." />
+  </xsl:template>
+
+  <xsl:template mode="pp:pretty-print-element-content" as="xs:string*" match="
+    document-node()">
+    <xsl:variable name="result" as="xs:string*">
+      <xsl:apply-templates mode="pp:pretty-print-xml" select="node()" />
+    </xsl:variable>
+    <xsl:sequence select="string-join($result, '')" />
+  </xsl:template>
 
   <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
     *[not(self::pp:*) and exists(child::node())]">

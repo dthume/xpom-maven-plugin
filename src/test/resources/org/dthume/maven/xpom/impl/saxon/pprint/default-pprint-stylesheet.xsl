@@ -25,9 +25,15 @@
   exclude-result-prefixes="#all" 
   version="2.0">
 
-  <xsl:import href="default-pprint-stylesheet.xsl" />
+  <xsl:import
+    href="resource:org/dthume/maven/xpom/impl/saxon/pprint/pprint-xml.xsl" />
 
-  <xsl:param name="defaultNSSortingStrategy" as="element()">
-    <pp:ns-sort-by-prefix pp:order-first="element default" />
-  </xsl:param>
+  <xsl:template mode="pp:pretty-print-xml" as="xs:string*" match="
+    document-node()/comment()">
+    <xsl:variable name="result" as="xs:string*">
+      <xsl:next-match />
+      <xsl:call-template name="pp:print-newline-indent" />
+    </xsl:variable>
+    <xsl:sequence select="string-join($result, '')" />
+  </xsl:template>
 </xsl:stylesheet>

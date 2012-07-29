@@ -18,35 +18,7 @@ package org.dthume.maven.xpom.impl.saxon.pprint;/*
  * #L%
  */
 
-
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.util.Collection;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-
-import net.sf.saxon.TransformerFactoryImpl;
-
-import org.codehaus.plexus.util.IOUtil;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.dthume.jaxp.ClasspathResourceURIResolver;
-import org.dthume.jaxp.ClasspathSource;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
+import static org.junit.Assert.assertEquals;import java.io.File;import java.io.FileReader;import java.util.Collection;import javax.xml.transform.Source;import javax.xml.transform.Transformer;import javax.xml.transform.TransformerException;import javax.xml.transform.TransformerFactory;import javax.xml.transform.stream.StreamResult;import net.sf.saxon.TransformerFactoryImpl;import org.codehaus.plexus.util.IOUtil;import org.custommonkey.xmlunit.XMLUnit;import org.dthume.jaxp.ClasspathResourceURIResolver;import org.dthume.jaxp.ClasspathSource;import org.junit.Before;import org.junit.BeforeClass;import org.junit.Rule;import org.junit.Test;import org.junit.rules.ExternalResource;import org.junit.runner.RunWith;import org.junit.runners.Parameterized;import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class PPrintXmlTest {
     private Transformer transformer;
@@ -54,7 +26,7 @@ public class PPrintXmlTest {
     
     private Source transformSource;
     private Source inputSource;
-    private String expectedSource;
+    private String expectedSource;        private boolean verbose = false;
 
     public PPrintXmlTest(final String test) {
         inputSource =
@@ -63,7 +35,7 @@ public class PPrintXmlTest {
         
         String xslName = test + "-stylesheet.xsl";
         if (null == getClass().getResourceAsStream(xslName))
-            xslName = "pprint-xml.xsl";
+            xslName = "default-pprint-stylesheet.xsl";
         transformSource = new ClasspathSource(xslName, getClass());
     }
     
@@ -93,15 +65,13 @@ public class PPrintXmlTest {
     @BeforeClass
     public static void beforeClassTests() {
         XMLUnit.setIgnoreAttributeOrder(false);
-        XMLUnit.setIgnoreWhitespace(false);
-    }
+        XMLUnit.setIgnoreWhitespace(false);            }
     
     @Before
     public void beforeEachTest() throws TransformerException {
         final TransformerFactory factory = new TransformerFactoryImpl();
         factory.setURIResolver(new ClasspathResourceURIResolver(getClass()));
-        final Source xsl = transformSource;
-        transformer = factory.newTransformer(xsl);
+        transformer = factory.newTransformer(transformSource);                verbose =                Boolean.parseBoolean(System.getProperty("ut.verbose"));
     }
     
     @Test
@@ -111,7 +81,6 @@ public class PPrintXmlTest {
         final String expected =
                 IOUtil.toString(getClass().getResourceAsStream(expectedSource));
         final String actual = IOUtil.toString(new FileReader(outputFile));
-        
-        assertEquals(expected, actual);
+        if (verbose)            System.out.println(actual);                assertEquals(expected, actual);
     }
 }
