@@ -20,6 +20,5 @@
   -->
 
 <document>
-  <?pi1 with some content ?><el />
-  <!-- Some comment --><e2 />
+  <el1 apos-attr="foo" quot-attr="bar" />
 </document>

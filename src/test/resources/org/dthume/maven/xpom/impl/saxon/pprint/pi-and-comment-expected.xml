@@ -22,4 +22,6 @@
 <document>
   <?pi1 with some content ?>
   <el />
+  <!-- Some comment -->
+  <e2 />
 </document>

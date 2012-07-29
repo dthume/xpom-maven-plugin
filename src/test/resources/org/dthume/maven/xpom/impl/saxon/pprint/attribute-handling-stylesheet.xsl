@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!--
   #%L
   XPOM Maven Plugin
@@ -18,8 +18,19 @@
   limitations under the License.
   #L%
   -->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:pp="urn:xpom:core:pretty-print-xml"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    
+  exclude-result-prefixes="#all" 
+  version="2.0">
 
-<document>
-  <?pi1 with some content ?><el />
-  <!-- Some comment --><e2 />
-</document>
+  <xsl:import href="default-pprint-stylesheet.xsl" />
+
+  <xsl:template mode="pp:pretty-print-xml-attributes" match="@apos-attr">
+    <xsl:next-match>
+      <xsl:with-param name="pp:useQuotForAttributes" tunnel="yes" select="
+        false()" />
+    </xsl:next-match>
+  </xsl:template>
+</xsl:stylesheet>

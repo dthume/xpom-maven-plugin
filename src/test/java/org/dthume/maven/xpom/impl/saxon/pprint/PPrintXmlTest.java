@@ -43,7 +43,7 @@ public class PPrintXmlTest {
     public static Collection<Object[]> parameters() {
         return java.util.Arrays.asList(new Object[][] {
                 {"basic-document"},
-                {"mixed-content"},
+                {"mixed-content"},                {"attribute-handling"},
                 {"xmlns-ordering"},                {"pi-and-comment"}
         });
     }
